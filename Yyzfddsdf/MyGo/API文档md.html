@@ -1,0 +1,797 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>2.2.1 Python 时间戳生成示例.md</title><style>@charset "UTF-8";@import 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css';code{color:#c7254e;background-color:#f9f2f4;border-radius:4px}code,kbd{padding:2px 4px}kbd{color:#fff;background-color:#333;border-radius:3px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}kbd kbd{padding:0;font-size:100%;box-shadow:none}pre{display:block;margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.pre-scrollable{max-height:340px;overflow-y:scroll}table{background-color:transparent}th{text-align:left}.table{width:100%;max-width:100%;margin-bottom:20px}.table>thead>tr>th{padding:8px;line-height:1.4285714;border-top:1px solid #ddd}.table>thead>tr>td,.table>tbody>tr>th,.table>tbody>tr>td,.table>tfoot>tr>th,.table>tfoot>tr>td{padding:8px;line-height:1.4285714;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>caption+thead>tr:first-child>th,.table>caption+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>thead:first-child>tr:first-child>th,.table>thead:first-child>tr:first-child>td{border-top:0}.table>tbody+tbody{border-top:2px solid #ddd}.table .table{background-color:#fff}.table-condensed>thead>tr>th,.table-condensed>thead>tr>td,.table-condensed>tbody>tr>th,.table-condensed>tbody>tr>td,.table-condensed>tfoot>tr>th,.table-condensed>tfoot>tr>td{padding:5px}.table-bordered,.table-bordered>thead>tr>th,.table-bordered>thead>tr>td,.table-bordered>tbody>tr>th,.table-bordered>tbody>tr>td,.table-bordered>tfoot>tr>th,.table-bordered>tfoot>tr>td{border:1px solid #ddd}.table-bordered>thead>tr>th,.table-bordered>thead>tr>td{border-bottom-width:2px}.table-striped>tbody>tr:nth-child(odd)>td,.table-striped>tbody>tr:nth-child(odd)>th{background-color:#f9f9f9}.table-hover>tbody>tr:hover>td,.table-hover>tbody>tr:hover>th{background-color:#f5f5f5}table col[class*="col-"]{position:static;float:none;display:table-column}table td[class*="col-"],table th[class*="col-"]{position:static;float:none;display:table-cell}.table>thead>tr>td.active,.table>thead>tr>th.active,.table>thead>tr.active>td,.table>thead>tr.active>th,.table>tbody>tr>td.active,.table>tbody>tr>th.active,.table>tbody>tr.active>td,.table>tbody>tr.active>th,.table>tfoot>tr>td.active,.table>tfoot>tr>th.active,.table>tfoot>tr.active>td,.table>tfoot>tr.active>th{background-color:#f5f5f5}.table-hover>tbody>tr>td.active:hover,.table-hover>tbody>tr>th.active:hover,.table-hover>tbody>tr.active:hover>td,.table-hover>tbody>tr:hover>.active,.table-hover>tbody>tr.active:hover>th{background-color:#e8e8e8}.table>thead>tr>td.success,.table>thead>tr>th.success,.table>thead>tr.success>td,.table>thead>tr.success>th,.table>tbody>tr>td.success,.table>tbody>tr>th.success,.table>tbody>tr.success>td,.table>tbody>tr.success>th,.table>tfoot>tr>td.success,.table>tfoot>tr>th.success,.table>tfoot>tr.success>td,.table>tfoot>tr.success>th{background-color:#dff0d8}.table-hover>tbody>tr>td.success:hover,.table-hover>tbody>tr>th.success:hover,.table-hover>tbody>tr.success:hover>td,.table-hover>tbody>tr:hover>.success,.table-hover>tbody>tr.success:hover>th{background-color:#d0e9c6}.table>thead>tr>td.info,.table>thead>tr>th.info,.table>thead>tr.info>td,.table>thead>tr.info>th,.table>tbody>tr>td.info,.table>tbody>tr>th.info,.table>tbody>tr.info>td,.table>tbody>tr.info>th,.table>tfoot>tr>td.info,.table>tfoot>tr>th.info,.table>tfoot>tr.info>td,.table>tfoot>tr.info>th{background-color:#d9edf7}.table-hover>tbody>tr>td.info:hover,.table-hover>tbody>tr>th.info:hover,.table-hover>tbody>tr.info:hover>td,.table-hover>tbody>tr:hover>.info,.table-hover>tbody>tr.info:hover>th{background-color:#c4e3f3}.table>thead>tr>td.warning,.table>thead>tr>th.warning,.table>thead>tr.warning>td,.table>thead>tr.warning>th,.table>tbody>tr>td.warning,.table>tbody>tr>th.warning,.table>tbody>tr.warning>td,.table>tbody>tr.warning>th,.table>tfoot>tr>td.warning,.table>tfoot>tr>th.warning,.table>tfoot>tr.warning>td,.table>tfoot>tr.warning>th{background-color:#fcf8e3}.table-hover>tbody>tr>td.warning:hover,.table-hover>tbody>tr>th.warning:hover,.table-hover>tbody>tr.warning:hover>td,.table-hover>tbody>tr:hover>.warning,.table-hover>tbody>tr.warning:hover>th{background-color:#faf2cc}.table>thead>tr>td.danger,.table>thead>tr>th.danger,.table>thead>tr.danger>td,.table>thead>tr.danger>th,.table>tbody>tr>td.danger,.table>tbody>tr>th.danger,.table>tbody>tr.danger>td,.table>tbody>tr.danger>th,.table>tfoot>tr>td.danger,.table>tfoot>tr>th.danger,.table>tfoot>tr.danger>td,.table>tfoot>tr.danger>th{background-color:#f2dede}.table-hover>tbody>tr>td.danger:hover,.table-hover>tbody>tr>th.danger:hover,.table-hover>tbody>tr.danger:hover>td,.table-hover>tbody>tr:hover>.danger,.table-hover>tbody>tr.danger:hover>th{background-color:#ebcccc}fieldset{border:0;min-width:0}legend{display:block;width:100%;margin-bottom:20px;font-size:21px;line-height:inherit;color:#333;border-bottom:1px solid #e5e5e5}label{display:inline-block;max-width:100%;margin-bottom:5px;font-weight:700}input[type="radio"],input[type="checkbox"]{margin:4px 0 0;margin-top:1px \9;line-height:normal}input[type="file"]{display:block}input[type="range"]{display:block;width:100%}select[multiple],select[size]{height:auto}input[type="file"]:focus,input[type="radio"]:focus,input[type="checkbox"]:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}output{padding-top:7px}output,.form-control{display:block;font-size:14px;line-height:1.4285714;color:#555}.form-control{width:100%;height:34px;padding:6px 12px;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.075);transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}.form-control:focus{border-color:#66afe9;outline:0;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}.form-control::-moz-placeholder{color:#777;opacity:1}.form-control:-ms-input-placeholder{color:#777}.form-control::-webkit-input-placeholder{color:#777}.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control{cursor:not-allowed;background-color:#eee;opacity:1}textarea.form-control{height:auto}input[type="date"],input[type="time"],input[type="datetime-local"],input[type="month"]{line-height:34px;line-height:1.4285714 \0}input[type="date"].input-sm,.form-horizontal .form-group-sm input.form-control[type="date"],.input-group-sm>input.form-control[type="date"],.input-group-sm>input.input-group-addon[type="date"],.input-group-sm>.input-group-btn>input.btn[type="date"],input[type="time"].input-sm,.form-horizontal .form-group-sm input.form-control[type="time"],.input-group-sm>input.form-control[type="time"],.input-group-sm>input.input-group-addon[type="time"],.input-group-sm>.input-group-btn>input.btn[type="time"],input[type="datetime-local"].input-sm,.form-horizontal .form-group-sm input.form-control[type="datetime-local"],.input-group-sm>input.form-control[type="datetime-local"],.input-group-sm>input.input-group-addon[type="datetime-local"],.input-group-sm>.input-group-btn>input.btn[type="datetime-local"],input[type="month"].input-sm,.form-horizontal .form-group-sm input.form-control[type="month"],.input-group-sm>input.form-control[type="month"],.input-group-sm>input.input-group-addon[type="month"],.input-group-sm>.input-group-btn>input.btn[type="month"]{line-height:30px}input[type="date"].input-lg,.form-horizontal .form-group-lg input.form-control[type="date"],.input-group-lg>input.form-control[type="date"],.input-group-lg>input.input-group-addon[type="date"],.input-group-lg>.input-group-btn>input.btn[type="date"],input[type="time"].input-lg,.form-horizontal .form-group-lg input.form-control[type="time"],.input-group-lg>input.form-control[type="time"],.input-group-lg>input.input-group-addon[type="time"],.input-group-lg>.input-group-btn>input.btn[type="time"],input[type="datetime-local"].input-lg,.form-horizontal .form-group-lg input.form-control[type="datetime-local"],.input-group-lg>input.form-control[type="datetime-local"],.input-group-lg>input.input-group-addon[type="datetime-local"],.input-group-lg>.input-group-btn>input.btn[type="datetime-local"],input[type="month"].input-lg,.form-horizontal .form-group-lg input.form-control[type="month"],.input-group-lg>input.form-control[type="month"],.input-group-lg>input.input-group-addon[type="month"],.input-group-lg>.input-group-btn>input.btn[type="month"]{line-height:46px}.form-group{margin-bottom:15px}.radio,.checkbox{position:relative;display:block;min-height:20px;margin-top:10px;margin-bottom:10px}.radio label,.checkbox label{padding-left:20px;margin-bottom:0;font-weight:400;cursor:pointer}.radio input[type="radio"],.radio-inline input[type="radio"],.checkbox input[type="checkbox"],.checkbox-inline input[type="checkbox"]{position:absolute;margin-left:-20px;margin-top:4px \9}.radio+.radio,.checkbox+.checkbox{margin-top:-5px}.radio-inline,.checkbox-inline{display:inline-block;padding-left:20px;margin-bottom:0;vertical-align:middle;font-weight:400;cursor:pointer}.radio-inline+.radio-inline,.checkbox-inline+.checkbox-inline{margin-top:0;margin-left:10px}input[type="radio"][disabled],input[type="radio"].disabled,fieldset[disabled] input[type="radio"],input[type="checkbox"][disabled],input[type="checkbox"].disabled,fieldset[disabled] input[type="checkbox"],.radio-inline.disabled,fieldset[disabled] .radio-inline,.checkbox-inline.disabled,fieldset[disabled] .checkbox-inline,.radio.disabled label,fieldset[disabled] .radio label,.checkbox.disabled label,fieldset[disabled] .checkbox label{cursor:not-allowed}.form-control-static{padding-top:7px;padding-bottom:7px;margin-bottom:0}.form-control-static.input-lg,.form-horizontal .form-group-lg .form-control-static.form-control,.input-group-lg>.form-control-static.form-control,.input-group-lg>.form-control-static.input-group-addon,.input-group-lg>.input-group-btn>.form-control-static.btn,.form-control-static.input-sm,.form-horizontal .form-group-sm .form-control-static.form-control,.input-group-sm>.form-control-static.form-control,.input-group-sm>.form-control-static.input-group-addon,.input-group-sm>.input-group-btn>.form-control-static.btn{padding-left:0;padding-right:0}.input-sm,.form-horizontal .form-group-sm .form-control,.input-group-sm>.form-control{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.input-group-sm>.input-group-addon{height:30px;line-height:1.5}.input-group-sm>.input-group-btn>.btn{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-sm,.form-horizontal .form-group-sm select.form-control,.input-group-sm>select.form-control,.input-group-sm>select.input-group-addon,.input-group-sm>.input-group-btn>select.btn{height:30px;line-height:30px}textarea.input-sm,.form-horizontal .form-group-sm textarea.form-control,.input-group-sm>textarea.form-control,.input-group-sm>textarea.input-group-addon,.input-group-sm>.input-group-btn>textarea.btn,select[multiple].input-sm,.form-horizontal .form-group-sm select.form-control[multiple],.input-group-sm>select.form-control[multiple],.input-group-sm>select.input-group-addon[multiple],.input-group-sm>.input-group-btn>select.btn[multiple]{height:auto}.input-lg,.form-horizontal .form-group-lg .form-control,.input-group-lg>.form-control{height:46px;padding:10px 16px;font-size:18px;line-height:1.33;border-radius:6px}.input-group-lg>.input-group-addon{height:46px;line-height:1.33}.input-group-lg>.input-group-btn>.btn{height:46px;padding:10px 16px;font-size:18px;line-height:1.33;border-radius:6px}select.input-lg,.form-horizontal .form-group-lg select.form-control,.input-group-lg>select.form-control,.input-group-lg>select.input-group-addon,.input-group-lg>.input-group-btn>select.btn{height:46px;line-height:46px}textarea.input-lg,.form-horizontal .form-group-lg textarea.form-control,.input-group-lg>textarea.form-control,.input-group-lg>textarea.input-group-addon,.input-group-lg>.input-group-btn>textarea.btn,select[multiple].input-lg,.form-horizontal .form-group-lg select.form-control[multiple],.input-group-lg>select.form-control[multiple],.input-group-lg>select.input-group-addon[multiple],.input-group-lg>.input-group-btn>select.btn[multiple]{height:auto}.has-feedback{position:relative}.has-feedback .form-control{padding-right:42.5px}.form-control-feedback{position:absolute;top:25px;right:0;z-index:2;display:block;width:34px;height:34px;line-height:34px;text-align:center}.input-lg+.form-control-feedback,.form-horizontal .form-group-lg .form-control+.form-control-feedback,.input-group-lg>.form-control+.form-control-feedback,.input-group-lg>.input-group-addon+.form-control-feedback,.input-group-lg>.input-group-btn>.btn+.form-control-feedback{width:46px;height:46px;line-height:46px}.input-sm+.form-control-feedback,.form-horizontal .form-group-sm .form-control+.form-control-feedback,.input-group-sm>.form-control+.form-control-feedback,.input-group-sm>.input-group-addon+.form-control-feedback,.input-group-sm>.input-group-btn>.btn+.form-control-feedback{width:30px;height:30px;line-height:30px}.has-success .help-block,.has-success .control-label,.has-success .radio,.has-success .checkbox,.has-success .radio-inline,.has-success .checkbox-inline{color:#3c763d}.has-success .form-control{border-color:#3c763d;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-success .form-control:focus{border-color:#2b542c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #67b168}.has-success .input-group-addon{color:#3c763d;border-color:#3c763d;background-color:#dff0d8}.has-success .form-control-feedback{color:#3c763d}.has-warning .help-block,.has-warning .control-label,.has-warning .radio,.has-warning .checkbox,.has-warning .radio-inline,.has-warning .checkbox-inline{color:#8a6d3b}.has-warning .form-control{border-color:#8a6d3b;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-warning .form-control:focus{border-color:#66512c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #c0a16b}.has-warning .input-group-addon{color:#8a6d3b;border-color:#8a6d3b;background-color:#fcf8e3}.has-warning .form-control-feedback{color:#8a6d3b}.has-error .help-block,.has-error .control-label,.has-error .radio,.has-error .checkbox,.has-error .radio-inline,.has-error .checkbox-inline{color:#a94442}.has-error .form-control{border-color:#a94442;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-error .form-control:focus{border-color:#843534;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483}.has-error .input-group-addon{color:#a94442;border-color:#a94442;background-color:#f2dede}.has-error .form-control-feedback{color:#a94442}.has-feedback label.sr-only~.form-control-feedback{top:0}.help-block{display:block;margin-top:5px;margin-bottom:10px;color:#737373}.form-horizontal .radio,.form-horizontal .checkbox,.form-horizontal .radio-inline,.form-horizontal .checkbox-inline{margin-top:0;margin-bottom:0;padding-top:7px}.form-horizontal .radio,.form-horizontal .checkbox{min-height:27px}.form-horizontal .form-group{margin-left:-15px;margin-right:-15px}.form-horizontal .form-group:before{content:" ";display:table}.form-horizontal .form-group:after{content:" ";display:table;clear:both}.form-horizontal .has-feedback .form-control-feedback{top:0;right:15px}.btn{display:inline-block;vertical-align:middle;cursor:pointer;background-image:none;border:1px solid transparent;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.btn:focus,.btn:active:focus,.btn.active:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}.btn:hover,.btn:focus{color:#333;text-decoration:none}.btn:active,.btn.active{outline:0;background-image:none;box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn.disabled,.btn[disabled],fieldset[disabled] .btn{cursor:not-allowed;pointer-events:none;opacity:.65;filter:alpha(opacity=65);box-shadow:none}.btn-default{color:#333;background-color:#fff;border-color:#ccc}.btn-default:hover,.btn-default:focus,.btn-default:active,.btn-default.active,.open>.btn-default.dropdown-toggle{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default:active,.btn-default.active,.open>.btn-default.dropdown-toggle{background-image:none}.btn-default.disabled,.btn-default.disabled:hover,.btn-default.disabled:focus,.btn-default.disabled:active,.btn-default.disabled.active,.btn-default[disabled],.btn-default[disabled]:hover,.btn-default[disabled]:focus,.btn-default[disabled]:active,.btn-default[disabled].active,fieldset[disabled] .btn-default,fieldset[disabled] .btn-default:hover,fieldset[disabled] .btn-default:focus,fieldset[disabled] .btn-default:active,fieldset[disabled] .btn-default.active{background-color:#fff;border-color:#ccc}.btn-default .badge{color:#fff;background-color:#333}.btn-primary{color:#fff;background-color:#428bca;border-color:#357ebd}.btn-primary:hover,.btn-primary:focus,.btn-primary:active,.btn-primary.active,.open>.btn-primary.dropdown-toggle{color:#fff;background-color:#3071a9;border-color:#285e8e}.btn-primary:active,.btn-primary.active,.open>.btn-primary.dropdown-toggle{background-image:none}.btn-primary.disabled,.btn-primary.disabled:hover,.btn-primary.disabled:focus,.btn-primary.disabled:active,.btn-primary.disabled.active,.btn-primary[disabled],.btn-primary[disabled]:hover,.btn-primary[disabled]:focus,.btn-primary[disabled]:active,.btn-primary[disabled].active,fieldset[disabled] .btn-primary,fieldset[disabled] .btn-primary:hover,fieldset[disabled] .btn-primary:focus,fieldset[disabled] .btn-primary:active,fieldset[disabled] .btn-primary.active{background-color:#428bca;border-color:#357ebd}.btn-primary .badge{color:#428bca;background-color:#fff}.btn-success{color:#fff;background-color:#5cb85c;border-color:#4cae4c}.btn-success:hover,.btn-success:focus,.btn-success:active,.btn-success.active,.open>.btn-success.dropdown-toggle{color:#fff;background-color:#449d44;border-color:#398439}.btn-success:active,.btn-success.active,.open>.btn-success.dropdown-toggle{background-image:none}.btn-success.disabled,.btn-success.disabled:hover,.btn-success.disabled:focus,.btn-success.disabled:active,.btn-success.disabled.active,.btn-success[disabled],.btn-success[disabled]:hover,.btn-success[disabled]:focus,.btn-success[disabled]:active,.btn-success[disabled].active,fieldset[disabled] .btn-success,fieldset[disabled] .btn-success:hover,fieldset[disabled] .btn-success:focus,fieldset[disabled] .btn-success:active,fieldset[disabled] .btn-success.active{background-color:#5cb85c;border-color:#4cae4c}.btn-success .badge{color:#5cb85c;background-color:#fff}.btn-info{color:#fff;background-color:#5bc0de;border-color:#46b8da}.btn-info:hover,.btn-info:focus,.btn-info:active,.btn-info.active,.open>.btn-info.dropdown-toggle{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info:active,.btn-info.active,.open>.btn-info.dropdown-toggle{background-image:none}.btn-info.disabled,.btn-info.disabled:hover,.btn-info.disabled:focus,.btn-info.disabled:active,.btn-info.disabled.active,.btn-info[disabled],.btn-info[disabled]:hover,.btn-info[disabled]:focus,.btn-info[disabled]:active,.btn-info[disabled].active,fieldset[disabled] .btn-info,fieldset[disabled] .btn-info:hover,fieldset[disabled] .btn-info:focus,fieldset[disabled] .btn-info:active,fieldset[disabled] .btn-info.active{background-color:#5bc0de;border-color:#46b8da}.btn-info .badge{color:#5bc0de;background-color:#fff}.btn-warning{color:#fff;background-color:#f0ad4e;border-color:#eea236}.btn-warning:hover,.btn-warning:focus,.btn-warning:active,.btn-warning.active,.open>.btn-warning.dropdown-toggle{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning:active,.btn-warning.active,.open>.btn-warning.dropdown-toggle{background-image:none}.btn-warning.disabled,.btn-warning.disabled:hover,.btn-warning.disabled:focus,.btn-warning.disabled:active,.btn-warning.disabled.active,.btn-warning[disabled],.btn-warning[disabled]:hover,.btn-warning[disabled]:focus,.btn-warning[disabled]:active,.btn-warning[disabled].active,fieldset[disabled] .btn-warning,fieldset[disabled] .btn-warning:hover,fieldset[disabled] .btn-warning:focus,fieldset[disabled] .btn-warning:active,fieldset[disabled] .btn-warning.active{background-color:#f0ad4e;border-color:#eea236}.btn-warning .badge{color:#f0ad4e;background-color:#fff}.btn-danger{color:#fff;background-color:#d9534f;border-color:#d43f3a}.btn-danger:hover,.btn-danger:focus,.btn-danger:active,.btn-danger.active,.open>.btn-danger.dropdown-toggle{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger:active,.btn-danger.active,.open>.btn-danger.dropdown-toggle{background-image:none}.btn-danger.disabled,.btn-danger.disabled:hover,.btn-danger.disabled:focus,.btn-danger.disabled:active,.btn-danger.disabled.active,.btn-danger[disabled],.btn-danger[disabled]:hover,.btn-danger[disabled]:focus,.btn-danger[disabled]:active,.btn-danger[disabled].active,fieldset[disabled] .btn-danger,fieldset[disabled] .btn-danger:hover,fieldset[disabled] .btn-danger:focus,fieldset[disabled] .btn-danger:active,fieldset[disabled] .btn-danger.active{background-color:#d9534f;border-color:#d43f3a}.btn-danger .badge{color:#d9534f;background-color:#fff}.btn-link{color:#428bca;font-weight:400;cursor:pointer;border-radius:0}.btn-link,.btn-link:active,.btn-link[disabled],fieldset[disabled] .btn-link{background-color:transparent;box-shadow:none}.btn-link,.btn-link:hover,.btn-link:focus,.btn-link:active{border-color:transparent}.btn-link:hover,.btn-link:focus{color:#2a6496;text-decoration:underline;background-color:transparent}.btn-link[disabled]:hover,.btn-link[disabled]:focus,fieldset[disabled] .btn-link:hover,fieldset[disabled] .btn-link:focus{color:#777;text-decoration:none}.btn-lg{padding:10px 16px;font-size:18px;line-height:1.33;border-radius:6px}.btn-sm{padding:5px 10px}.btn-sm,.btn-xs{font-size:12px;line-height:1.5;border-radius:3px}.btn-xs{padding:1px 5px}.btn-block{display:block;width:100%}.btn-block+.btn-block{margin-top:5px}input[type="submit"].btn-block,input[type="reset"].btn-block,input[type="button"].btn-block{width:100%}.fade{opacity:0;transition:opacity .15s linear}.fade.in{opacity:1}.collapse{display:none}.collapse.in{display:block}tr.collapse.in{display:table-row}tbody.collapse.in{display:table-row-group}.collapsing{position:relative;height:0;overflow:hidden;transition:height .35s ease}.input-group{position:relative;display:table;border-collapse:separate}.input-group[class*="col-"]{float:none;padding-left:0;padding-right:0}.input-group .form-control{position:relative;z-index:2;float:left;width:100%;margin-bottom:0}.input-group-addon,.input-group-btn,.input-group .form-control{display:table-cell}.input-group-addon:not(:first-child):not(:last-child),.input-group-btn:not(:first-child):not(:last-child),.input-group .form-control:not(:first-child):not(:last-child){border-radius:0}.input-group-addon{white-space:nowrap}.input-group-addon,.input-group-btn{width:1%;vertical-align:middle}.input-group-addon{padding:6px 12px;font-size:14px;font-weight:400;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px}.input-group-addon.input-sm,.form-horizontal .form-group-sm .input-group-addon.form-control,.input-group-sm>.input-group-addon,.input-group-sm>.input-group-btn>.input-group-addon.btn{padding:5px 10px;font-size:12px;border-radius:3px}.input-group-addon.input-lg,.form-horizontal .form-group-lg .input-group-addon.form-control,.input-group-lg>.input-group-addon,.input-group-lg>.input-group-btn>.input-group-addon.btn{padding:10px 16px;font-size:18px;border-radius:6px}.input-group-addon input[type="radio"],.input-group-addon input[type="checkbox"]{margin-top:0}.input-group .form-control:first-child,.input-group-addon:first-child,.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group>.btn,.input-group-btn:first-child>.dropdown-toggle,.input-group-btn:last-child>.btn:not(:last-child):not(.dropdown-toggle),.input-group-btn:last-child>.btn-group:not(:last-child)>.btn{border-bottom-right-radius:0;border-top-right-radius:0}.input-group-addon:first-child{border-right:0}.input-group .form-control:last-child,.input-group-addon:last-child,.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group>.btn,.input-group-btn:last-child>.dropdown-toggle,.input-group-btn:first-child>.btn:not(:first-child),.input-group-btn:first-child>.btn-group:not(:first-child)>.btn{border-bottom-left-radius:0;border-top-left-radius:0}.input-group-addon:last-child{border-left:0}.input-group-btn{font-size:0;white-space:nowrap}.input-group-btn,.input-group-btn>.btn{position:relative}.input-group-btn>.btn+.btn{margin-left:-1px}.input-group-btn>.btn:hover,.input-group-btn>.btn:focus,.input-group-btn>.btn:active{z-index:2}.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group{margin-right:-1px}.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group{margin-left:-1px}.pagination{display:inline-block;padding-left:0;margin:20px 0;border-radius:4px}.pagination>li{display:inline}.pagination>li>a,.pagination>li>span{position:relative;float:left;padding:6px 12px;line-height:1.4285714;text-decoration:none;color:#428bca;background-color:#fff;border:1px solid #ddd;margin-left:-1px}.pagination>li:first-child>a,.pagination>li:first-child>span{margin-left:0;border-bottom-left-radius:4px;border-top-left-radius:4px}.pagination>li:last-child>a,.pagination>li:last-child>span{border-bottom-right-radius:4px;border-top-right-radius:4px}.pagination>li>a:hover,.pagination>li>a:focus,.pagination>li>span:hover,.pagination>li>span:focus{color:#2a6496;background-color:#eee;border-color:#ddd}.pagination>.active>a,.pagination>.active>a:hover,.pagination>.active>a:focus,.pagination>.active>span,.pagination>.active>span:hover,.pagination>.active>span:focus{z-index:2;color:#fff;background-color:#428bca;border-color:#428bca;cursor:default}.pagination>.disabled>span,.pagination>.disabled>span:hover,.pagination>.disabled>span:focus,.pagination>.disabled>a,.pagination>.disabled>a:hover,.pagination>.disabled>a:focus{color:#777;background-color:#fff;border-color:#ddd;cursor:not-allowed}.pagination-lg>li>a,.pagination-lg>li>span{padding:10px 16px;font-size:18px}.pagination-lg>li:first-child>a,.pagination-lg>li:first-child>span{border-bottom-left-radius:6px;border-top-left-radius:6px}.pagination-lg>li:last-child>a,.pagination-lg>li:last-child>span{border-bottom-right-radius:6px;border-top-right-radius:6px}.pagination-sm>li>a,.pagination-sm>li>span{padding:5px 10px;font-size:12px}.pagination-sm>li:first-child>a,.pagination-sm>li:first-child>span{border-bottom-left-radius:3px;border-top-left-radius:3px}.pagination-sm>li:last-child>a,.pagination-sm>li:last-child>span{border-bottom-right-radius:3px;border-top-right-radius:3px}.close{float:right;font-size:21px;font-weight:700;line-height:1;color:#000;text-shadow:0 1px 0 #fff;opacity:.2;filter:alpha(opacity=20)}.close:hover,.close:focus{color:#000;text-decoration:none;cursor:pointer;opacity:.5;filter:alpha(opacity=50)}button.close{padding:0;cursor:pointer;background:0 0;border:0;-webkit-appearance:none}.modal-open,.modal{overflow:hidden}.modal{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:1050;-webkit-overflow-scrolling:touch;outline:0}.modal.fade .modal-dialog{transform:translate3d(0,-25%,0);transition:transform .3s ease-out}.modal.in .modal-dialog{transform:translate3d(0,0,0)}.modal-open .modal{overflow-x:hidden;overflow-y:auto}.modal-dialog{position:relative;width:auto;margin:10px}.modal-content{position:relative;background-color:#fff;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;box-shadow:0 3px 9px rgba(0,0,0,.5);background-clip:padding-box;outline:0}.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color:#000}.modal-backdrop.fade{opacity:0;filter:alpha(opacity=0)}.modal-backdrop.in{opacity:.5;filter:alpha(opacity=50)}.modal-header{padding:15px;border-bottom:1px solid #e5e5e5;min-height:16.4285714px}.modal-header .close{margin-top:-2px}.modal-title{margin:0;line-height:1.4285714}.modal-body{position:relative;padding:15px}.modal-footer{padding:15px;text-align:right;border-top:1px solid #e5e5e5}.modal-footer:before,.modal-footer:after{content:" ";display:table}.modal-footer:after{clear:both}.modal-footer .btn+.btn{margin-left:5px;margin-bottom:0}.modal-footer .btn-group .btn+.btn{margin-left:-1px}.modal-footer .btn-block+.btn-block{margin-left:0}.modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}.clearfix:before,.clearfix:after{content:" ";display:table}.clearfix:after{clear:both}.center-block{display:block;margin-left:auto;margin-right:auto}.pull-right{float:right!important}.pull-left{float:left!important}.hide{display:none!important}.show{display:block!important}.invisible{visibility:hidden}.text-hide{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0}.hidden{display:none!important;visibility:hidden!important}.affix{position:fixed;transform:translate3d(0,0,0)}.hljs{display:block;overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.hljs-comment,.hljs-template_comment,.diff .hljs-header,.hljs-doctype,.hljs-pi,.lisp .hljs-string,.hljs-javadoc{color:#586e75}.hljs-keyword,.hljs-winutils,.method,.hljs-addition,.css .hljs-tag,.hljs-request,.hljs-status,.nginx .hljs-title{color:#859900}.hljs-number,.hljs-command,.hljs-string,.hljs-tag .hljs-value,.hljs-rules .hljs-value,.hljs-phpdoc,.hljs-dartdoc,.tex .hljs-formula,.hljs-regexp,.hljs-hexcolor,.hljs-link_url{color:#2aa198}.hljs-title,.hljs-localvars,.hljs-chunk,.hljs-decorator,.hljs-built_in,.hljs-identifier,.vhdl .hljs-literal,.hljs-id,.css .hljs-function{color:#268bd2}.hljs-attribute,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number,.hljs-constant,.hljs-class .hljs-title,.hljs-parent,.hljs-type,.hljs-link_reference{color:#b58900}.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-pragma,.hljs-shebang,.hljs-symbol,.hljs-symbol .hljs-string,.diff .hljs-change,.hljs-special,.hljs-attr_selector,.hljs-subst,.hljs-cdata,.css .hljs-pseudo,.hljs-header{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,*:before,*:after{box-sizing:border-box}html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background:0 0}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}pre{overflow:auto}code,kbd{font-size:1em}code,kbd,pre,samp{font-family:monospace,monospace}samp{font-size:1em}button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}button{overflow:visible}button,select{text-transform:none}button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}input{line-height:normal}input[type="checkbox"],input[type="radio"]{box-sizing:border-box;padding:0;margin-right:5px}input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{height:auto}input[type="search"]{-webkit-appearance:textfield;box-sizing:content-box}input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}legend{border:0;padding:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-collapse:collapse;border-spacing:0}.debug{background-color:#ffc0cb!important}.ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ir{background-color:transparent;border:0;overflow:hidden}.ir::before{content:'';display:block;height:150%;width:0}html{font-size:.875em;background:#fff;color:#373D49}html,body{font-family:Georgia,Cambria,serif;height:100%}body{font-size:1rem;font-weight:400;line-height:2rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}li{font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ul,li>ol{margin-bottom:0}p{padding-top:.66001rem;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{font-size:1rem;padding:.66001rem 9.5px 9.5px;line-height:2rem;background:linear-gradient(to bottom,#fff 0,#fff .75rem,#f5f7fa .75rem,#f5f7fa 2.75rem,#fff 2.75rem,#fff 4rem);background-size:100% 4rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{font-size:1rem;margin-bottom:.33999rem;font-style:italic;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}th,td{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a{cursor:pointer;color:#35D7BB;text-decoration:none}a:hover,a:focus{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}dt{font-style:italic;font-weight:600}.g{display:block}.g:after{clear:both;content:'';display:table}.g-b{float:left;margin:0;width:100%}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--center{display:block;float:none;margin:0 auto}.g-b--right{float:right}.g-b--1of1{width:100%}.g-b--1of2,.g-b--2of4,.g-b--3of6,.g-b--4of8,.g-b--5of10,.g-b--6of12{width:50%}.g-b--1of3,.g-b--2of6,.g-b--4of12{width:33.333%}.g-b--2of3,.g-b--4of6,.g-b--8of12{width:66.666%}.g-b--1of4,.g-b--2of8,.g-b--3of12{width:25%}.g-b--3of4,.g-b--6of8,.g-b--9of12{width:75%}.g-b--1of5,.g-b--2of10{width:20%}.g-b--2of5,.g-b--4of10{width:40%}.g-b--3of5,.g-b--6of10{width:60%}.g-b--4of5,.g-b--8of10{width:80%}.g-b--1of6,.g-b--2of12{width:16.666%}.g-b--5of6,.g-b--10of12{width:83.333%}.g-b--1of8{width:12.5%}.g-b--3of8{width:37.5%}.g-b--5of8{width:62.5%}.g-b--7of8{width:87.5%}.g-b--1of10{width:10%}.g-b--3of10{width:30%}.g-b--7of10{width:70%}.g-b--9of10{width:90%}.g-b--1of12{width:8.333%}.g-b--5of12{width:41.666%}.g-b--7of12{width:58.333%}.g-b--11of12{width:91.666%}.g-b--push--1of1{margin-left:100%}.g-b--push--1of2,.g-b--push--2of4,.g-b--push--3of6,.g-b--push--4of8,.g-b--push--5of10,.g-b--push--6of12{margin-left:50%}.g-b--push--1of3,.g-b--push--2of6,.g-b--push--4of12{margin-left:33.333%}.g-b--push--2of3,.g-b--push--4of6,.g-b--push--8of12{margin-left:66.666%}.g-b--push--1of4,.g-b--push--2of8,.g-b--push--3of12{margin-left:25%}.g-b--push--3of4,.g-b--push--6of8,.g-b--push--9of12{margin-left:75%}.g-b--push--1of5,.g-b--push--2of10{margin-left:20%}.g-b--push--2of5,.g-b--push--4of10{margin-left:40%}.g-b--push--3of5,.g-b--push--6of10{margin-left:60%}.g-b--push--4of5,.g-b--push--8of10{margin-left:80%}.g-b--push--1of6,.g-b--push--2of12{margin-left:16.666%}.g-b--push--5of6,.g-b--push--10of12{margin-left:83.333%}.g-b--push--1of8{margin-left:12.5%}.g-b--push--3of8{margin-left:37.5%}.g-b--push--5of8{margin-left:62.5%}.g-b--push--7of8{margin-left:87.5%}.g-b--push--1of10{margin-left:10%}.g-b--push--3of10{margin-left:30%}.g-b--push--7of10{margin-left:70%}.g-b--push--9of10{margin-left:90%}.g-b--push--1of12{margin-left:8.333%}.g-b--push--5of12{margin-left:41.666%}.g-b--push--7of12{margin-left:58.333%}.g-b--push--11of12{margin-left:91.666%}.g-b--pull--1of1{margin-right:100%}.g-b--pull--1of2,.g-b--pull--2of4,.g-b--pull--3of6,.g-b--pull--4of8,.g-b--pull--5of10,.g-b--pull--6of12{margin-right:50%}.g-b--pull--1of3,.g-b--pull--2of6,.g-b--pull--4of12{margin-right:33.333%}.g-b--pull--2of3,.g-b--pull--4of6,.g-b--pull--8of12{margin-right:66.666%}.g-b--pull--1of4,.g-b--pull--2of8,.g-b--pull--3of12{margin-right:25%}.g-b--pull--3of4,.g-b--pull--6of8,.g-b--pull--9of12{margin-right:75%}.g-b--pull--1of5,.g-b--pull--2of10{margin-right:20%}.g-b--pull--2of5,.g-b--pull--4of10{margin-right:40%}.g-b--pull--3of5,.g-b--pull--6of10{margin-right:60%}.g-b--pull--4of5,.g-b--pull--8of10{margin-right:80%}.g-b--pull--1of6,.g-b--pull--2of12{margin-right:16.666%}.g-b--pull--5of6,.g-b--pull--10of12{margin-right:83.333%}.g-b--pull--1of8{margin-right:12.5%}.g-b--pull--3of8{margin-right:37.5%}.g-b--pull--5of8{margin-right:62.5%}.g-b--pull--7of8{margin-right:87.5%}.g-b--pull--1of10{margin-right:10%}.g-b--pull--3of10{margin-right:30%}.g-b--pull--7of10{margin-right:70%}.g-b--pull--9of10{margin-right:90%}.g-b--pull--1of12{margin-right:8.333%}.g-b--pull--5of12{margin-right:41.666%}.g-b--pull--7of12{margin-right:58.333%}.g-b--pull--11of12{margin-right:91.666%}.splashscreen{position:fixed;top:0;left:0;width:100%;height:100%;background-color:#373D49;z-index:22}.splashscreen-dillinger{width:260px;height:auto;display:block;margin:0 auto;padding-bottom:3rem}.splashscreen p{font-size:1.25rem;padding-top:.56251rem;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;text-align:center;max-width:500px;margin:0 auto;color:#FFF}.sp-center{position:relative;transform:translateY(-50%);top:50%}.open-menu>.wrapper{overflow-x:hidden}.page{margin:0 auto;position:relative;top:0;left:0;width:100%;height:100%;z-index:2;transition:all .25s ease-in-out;background-color:#fff;padding-top:51px;will-change:left}.open-menu .page{left:270px}.title{line-height:1rem;font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem;font-weight:500;color:#A0AABF;letter-spacing:1px;text-transform:uppercase;padding-left:16px;padding-right:16px;margin-top:1rem}.split-preview .title{padding-left:0}.title-document{line-height:1rem;font-size:1.25rem;margin-bottom:.89999rem;padding-top:.10001rem;font-weight:400;font-family:"Ubuntu Mono",Monaco;color:#373D49;padding-left:16px;padding-right:16px;width:80%;min-width:300px;outline:0;border:none}.icon{display:block;margin:0 auto;width:36px;height:36px;border-radius:3px;text-align:center}.icon svg{display:inline-block;margin-left:auto;margin-right:auto}.icon-preview{background-color:#373D49;line-height:40px}.icon-preview svg{width:19px;height:12px}.icon-settings{background-color:#373D49;line-height:44px}.icon-settings svg{width:18px;height:18px}.icon-link{width:16px;height:16px;line-height:1;margin-right:24px;text-align:right}.navbar{background-color:#373D49;height:51px;width:100%;position:fixed;top:0;left:0;z-index:6;transition:all .25s ease-in-out;will-change:left}.navbar:after{content:"";display:table;clear:both}.open-menu .navbar{left:270px}.navbar-brand{float:left;margin:0 0 0 24px;padding:0;line-height:42px}.navbar-brand svg{width:85px;height:11px}.nav-left{float:left}.nav-right{float:right}.nav-sidebar{width:100%}.menu{list-style:none;margin:0;padding:0}.menu a{border:0;color:#A0AABF;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;outline:none;text-transform:uppercase}.menu a:hover{color:#35D7BB}.menu .menu-item{border:0;display:none;float:left;margin:0;position:relative}.menu .menu-item>a{display:block;font-size:12px;height:51px;letter-spacing:1px;line-height:51px;padding:0 24px}.menu .menu-item--settings,.menu .menu-item--preview,.menu .menu-item--save-to.in-sidebar,.menu .menu-item--import-from.in-sidebar,.menu .menu-item--link-unlink.in-sidebar,.menu .menu-item--documents.in-sidebar{display:block}.menu .menu-item--documents{padding-bottom:1rem}.menu .menu-item.open>a{background-color:#1D212A}.menu .menu-item-icon>a{height:auto;padding:0}.menu .menu-item-icon:hover>a{background-color:transparent}.menu .menu-link.open i{background-color:#1D212A}.menu .menu-link.open g{fill:#35D7BB}.menu .menu-link-preview,.menu .menu-link-settings{margin-top:8px;width:51px}.menu-sidebar{width:100%}.menu-sidebar .menu-item{float:none;margin-bottom:1px;width:100%}.menu-sidebar .menu-item.open>a{background-color:#373D49}.menu-sidebar .open .caret{transform:rotate(180deg)}.menu-sidebar>.menu-item:hover .dropdown a,.menu-sidebar>.menu-item:hover .settings a{background-color:transparent}.menu-sidebar .menu-link{background-color:#373D49;font-weight:600}.menu-sidebar .menu-link:after{content:"";display:table;clear:both}.menu-sidebar .menu-link>span{float:left}.menu-sidebar .menu-link>.caret{float:right;text-align:right;top:22px}.menu-sidebar .dropdown,.menu-sidebar .settings{background-color:transparent;position:static;width:100%}.dropdown{position:absolute;right:0;top:51px;width:188px}.dropdown,.settings{display:none;background-color:#1D212A}.dropdown{padding:0}.dropdown,.settings,.sidebar-list{list-style:none;margin:0}.sidebar-list{padding:0}.dropdown li{margin:32px 0;padding:0 0 0 32px}.dropdown li,.settings li{line-height:1}.sidebar-list li{line-height:1;margin:32px 0;padding:0 0 0 32px}.dropdown a{color:#D0D6E2}.dropdown a,.settings a,.sidebar-list a{display:block;text-transform:none}.sidebar-list a{color:#D0D6E2}.dropdown a:after,.settings a:after,.sidebar-list a:after{content:"";display:table;clear:both}.dropdown .icon,.settings .icon,.sidebar-list .icon{float:right}.open .dropdown,.open .settings,.open .sidebar-list{display:block}.open .dropdown.collapse,.open .collapse.settings,.open .sidebar-list.collapse{display:none}.open .dropdown.collapse.in,.open .collapse.in.settings,.open .sidebar-list.collapse.in{display:block}.dropdown .unlinked .icon,.settings .unlinked .icon,.sidebar-list .unlinked .icon{opacity:.3}.dropdown.documents li,.documents.settings li,.sidebar-list.documents li{background-image:url("../img/icons/file.svg");background-position:240px center;background-repeat:no-repeat;background-size:14px 16px;padding:3px 32px}.dropdown.documents li.octocat,.documents.settings li.octocat,.sidebar-list.documents li.octocat{background-image:url("../img/icons/octocat.svg");background-position:234px center;background-size:24px 24px}.dropdown.documents li:last-child,.documents.settings li:last-child,.sidebar-list.documents li:last-child{margin-bottom:1rem}.dropdown.documents li.active a,.documents.settings li.active a,.sidebar-list.documents li.active a{color:#35D7BB}.settings{position:fixed;top:67px;right:16px;border-radius:3px;width:288px;background-color:#373D49;padding:16px;z-index:7}.show-settings .settings{display:block}.settings .has-checkbox{float:left}.settings form{display:-ms-flexbox;display:flex;-ms-flex-direction:row;flex-direction:row;-ms-flex-pack:justify;justify-content:space-between}.settings input{width:20%}.settings a{font-size:1.25rem;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;line-height:28px;color:#D0D6E2}.settings a:after{content:"";display:table;clear:both}.settings a:hover{color:#35D7BB}.settings li{border-bottom:1px solid #4F535B;margin:0;padding:16px 0}.settings li:last-child{border-bottom:none}.brand{border:none;display:block}.brand:hover g{fill:#35D7BB}.toggle{display:block;float:left;height:16px;padding:25px 16px 26px;width:40px}.toggle span:after,.toggle span:before{content:'';left:0;position:absolute;top:-6px}.toggle span:after{top:6px}.toggle span{display:block;position:relative}.toggle span,.toggle span:after,.toggle span:before{-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#D3DAEA;height:2px;transition:all .3s;width:20px}.open-menu .toggle span{background-color:transparent}.open-menu .toggle span:before{transform:rotate(45deg) translate(3px,3px)}.open-menu .toggle span:after{transform:rotate(-45deg) translate(5px,-6px)}.caret{display:inline-block;width:0;height:0;margin-left:6px;vertical-align:middle;position:relative;top:-1px;border-top:4px solid;border-right:4px solid transparent;border-left:4px solid transparent}.sidebar{overflow:auto;height:100%;padding-right:15px;padding-bottom:15px;width:285px}.sidebar-wrapper{-webkit-overflow-scrolling:touch;background-color:#2B2F36;left:0;height:100%;overflow-y:hidden;position:fixed;top:0;width:285px;z-index:1}.sidebar-branding{width:160px;padding:0;margin:16px auto}.header{border-bottom:1px solid #E8E8E8;position:relative}.words,.characters{line-height:1rem;font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem;font-weight:500;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:1px;text-transform:uppercase;z-index:5;position:absolute;right:16px;top:0}.words span,.characters span{color:#A0AABF}.words .counter,.characters .counter{color:#000}.words+.characters{top:22px}.mr10{margin-right:10px}.btn{text-align:center;display:inline-block;width:100%;text-transform:uppercase;font-weight:600;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;text-shadow:0 1px 0 #1b8b77;padding:16px 24px;background-color:#35D7BB;border-radius:3px;margin:0 auto 16px;line-height:1;color:#fff;transition:all .15s linear;-webkit-font-smoothing:antialiased}.btn--new,.btn--save{display:block;width:238px}.btn--new:hover,.btn--new:focus,.btn--save:hover,.btn--save:focus{color:#fff;border-bottom-color:transparent;box-shadow:0 1px 3px #24b59c;text-shadow:0 1px 0 #24b59c}.btn--save{background-color:#4A5261;text-shadow:0 1px 1px #1e2127}.btn--save:hover,.btn--save:focus{color:#fff;border-bottom-color:transparent;box-shadow:0 1px 5px #08090a;text-shadow:none}.btn--delete{display:block;width:238px;background-color:transparent;font-size:12px;text-shadow:none}.btn--delete:hover,.btn--delete:focus{color:#fff;border-bottom-color:transparent;text-shadow:0 1px 0 #08090a;opacity:.8}.btn--delete-modal,.btn--ok,.btn--close{border-top:0;background-color:#4A5261;text-shadow:0 1px 0 #08090a;margin:0}.btn--delete-modal:hover,.btn--delete-modal:focus,.btn--ok:hover,.btn--ok:focus,.btn--close:hover,.btn--close:focus{color:#fff;background-color:#292d36;text-shadow:none}.btn--delete-modal{display:inline;width:auto}.overlay{position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(55,61,73,.8);transition:all .25s ease-in-out;transition-timing-function:ease-out;will-change:left,opacity,visibility;z-index:5;opacity:0;visibility:hidden}.show-settings .overlay{visibility:visible;opacity:1}.switch{float:right;line-height:1}.switch input{display:none}.switch small{display:inline-block;cursor:pointer;padding:0 24px 0 0;transition:all ease .2s;background-color:#2B2F36;border-color:#2B2F36}.switch small,.switch small:before{border-radius:30px;box-shadow:inset 0 0 2px 0 #14171F}.switch small:before{display:block;content:'';width:28px;height:28px;background:#fff}.switch.checked small{padding-right:0;padding-left:24px;background-color:#35D7BB;box-shadow:none}.modal--dillinger.about .modal-dialog{font-size:1.25rem;max-width:500px}.modal--dillinger.scope .modal-dialog{max-width:300px;margin:5rem auto}.modal--dillinger .modal-dialog{max-width:600px;width:auto;margin:5rem auto}.modal--dillinger .modal-content{background:#373D49;border-radius:3px;box-shadow:0 2px 5px 0 #2C3B59;color:#fff;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;padding:2rem}.modal--dillinger ul{list-style-type:disc;margin:1rem 0;padding:0 0 0 1rem}.modal--dillinger li{padding:0;margin:0}.modal--dillinger .modal-header{border:0;padding:0}.modal--dillinger .modal-body{padding:0}.modal--dillinger .modal-footer{border:0;padding:0}.modal--dillinger .close{color:#fff;opacity:1}.modal-backdrop{background-color:#373D49}.pagination--dillinger{padding:0!important;margin:1.5rem 0!important;display:-ms-flexbox;display:flex;-ms-flex-pack:justify;justify-content:space-between;-ms-flex-direction:row;flex-direction:row;-ms-flex-align:center;align-items:center;-ms-flex-line-pack:stretch;align-content:stretch}.pagination--dillinger li{display:-ms-flexbox;display:flex;-ms-flex-positive:1;flex-grow:1;text-align:center}.pagination--dillinger li:first-child>a,.pagination--dillinger li.disabled>a,.pagination--dillinger li.disabled>a:hover,.pagination--dillinger li.disabled>a:focus,.pagination--dillinger li>a{background-color:transparent;border-color:#4F535B;border-right-color:transparent}.pagination--dillinger li.active>a,.pagination--dillinger li.active>a:hover,.pagination--dillinger li.active>a:focus{border-color:#4A5261;background-color:#4A5261;color:#fff}.pagination--dillinger li>a{float:none;color:#fff;width:100%;display:block;text-align:center;margin:0;border-right-color:transparent;padding:6px}.pagination--dillinger li>a:hover,.pagination--dillinger li>a:focus{border-color:#35D7BB;background-color:#35D7BB;color:#fff}.pagination--dillinger li:last-child a{border-color:#4F535B}.pagination--dillinger li:first-child a{border-right-color:transparent}.diNotify{position:absolute;z-index:9999;left:0;right:0;top:0;margin:0 auto;max-width:400px;text-align:center;transition:top .5s ease-in-out,opacity .5s ease-in-out;visibility:hidden}.diNotify-body{-webkit-font-smoothing:antialiased;background-color:#35D7BB;background:#666E7F;border-radius:3px;color:#fff;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;overflow:hidden;padding:1rem 2rem .5rem;display:-ms-flexbox;display:flex;-ms-flex-align:baseline;align-items:baseline;-ms-flex-pack:center;justify-content:center}.diNotify-icon{display:block;width:16px;height:16px;line-height:16px;position:relative;top:3px}.diNotify-message{padding-left:1rem}.zen-wrapper{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;background-color:#FFF;opacity:0;transition:opacity .25s ease-in-out}.zen-wrapper.on{opacity:1}.enter-zen-mode{background-image:url("../img/icons/enter-zen.svg");right:.5rem;top:.313rem;display:none}.enter-zen-mode,.close-zen-mode{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0;background-repeat:no-repeat;width:32px;height:32px;display:block;position:absolute}.close-zen-mode{background-image:url("../img/icons/exit-zen.svg");right:1rem;top:1rem}.zen-page{position:relative;top:0;bottom:0;z-index:11;height:100%;width:100%}#zen{font-size:1.25rem;width:300px;height:80%;margin:0 auto;position:relative;top:10%}#zen:before,#zen:after{content:"";position:absolute;height:10%;width:100%;z-index:12;pointer-events:none}#preview .table{width:auto}.ui-resizable{position:relative}.ui-resizable-handle{position:absolute;font-size:.1px;z-index:99999;display:block}.ui-resizable-e{background-color:#666;border-right:8px solid #e8e8e8;border-left:1px solid #222;width:10px;z-index:88!important;position:relative}.ui-resizable-e:after{content:"-";display:block;position:absolute;top:calc(50% - 16px);left:0;height:25px;width:2px;background-color:rgba(0,0,0,.4);margin:3px}#editor{cursor:ew-resize;position:relative;z-index:auto}.profile-pic{float:left;width:250px}#_default_ a::before{color:#A0AABF}#_default_ img{display:none}#_default_ #_default_{display:block;float:left;max-width:38%;word-wrap:break-word}#_default_ .default-ad{display:none}#_default_ ._default_{display:block}#_default_ a{color:#35d7bb;text-decoration:none}#_default_ a:hover{color:#8ae8d8}#_default_ .default-image{display:none}#_default_ .default-title:after{content:" — "}#_default_ .default-title,#_default_ .default-text,#_default_ .default-description{display:inline}#_default_ .default-title{position:relative;font-weight:600;display:none}#_default_ a:before{position:relative;top:0;padding:5px;color:#a0aabf;content:"Ad";text-transform:uppercase;font-size:8px;font-family:Verdana,sans-serif}#_default_{display:block;float:left;max-width:38%;word-wrap:break-word}#_default_ ._default_{display:block;font-size:.75rem;height:51px;letter-spacing:1px;line-height:1rem;padding:18px 24px}body{max-width:1024px;margin:0 auto;overflow:auto;padding:2%}.split{overflow:scroll;padding:0!important;-webkit-overflow-scrolling:touch}.split-editor{padding-left:0;padding-right:0;position:relative;z-index:3}.show-preview .split-editor{display:none}.split-preview{background-color:#fff;display:none;top:0;position:relative;z-index:4}.show-preview .split-preview{display:block}#editor{font-size:1rem;font-family:"Ubuntu Mono",Monaco;font-weight:400;line-height:2rem;width:100%;height:100%}#editor .ace_gutter{-webkit-font-smoothing:antialiased}.editor-header{width:50%;float:left;border-bottom:1px solid #E8E8E8;position:relative}.editor-header--first{border-right:1px solid #E8E8E8}.editor-header .title{display:inline-block}.preview-html{padding:15px}.preview-html a{color:#A0AABF;text-decoration:underline}.preview-src{white-space:normal}.preview-mode-toggle-src{background-image:url("../img/icons/code.svg")}.preview-mode-toggle-src,.preview-mode-toggle-html{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0;background-repeat:no-repeat;width:32px;height:32px;display:block;position:absolute;right:.5rem;top:.5rem;display:none}.preview-mode-toggle-html{background-image:url("../img/icons/eye.svg")}.sr-only{visibility:hidden;text-overflow:110%;overflow:hidden;top:-100px;position:absolute}.mnone{margin:0!important}@media screen and (min-width:27.5em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--m1of1{width:100%}.g-b--m1of2,.g-b--m2of4,.g-b--m3of6,.g-b--m4of8,.g-b--m5of10,.g-b--m6of12{width:50%}.g-b--m1of3,.g-b--m2of6,.g-b--m4of12{width:33.333%}.g-b--m2of3,.g-b--m4of6,.g-b--m8of12{width:66.666%}.g-b--m1of4,.g-b--m2of8,.g-b--m3of12{width:25%}.g-b--m3of4,.g-b--m6of8,.g-b--m9of12{width:75%}.g-b--m1of5,.g-b--m2of10{width:20%}.g-b--m2of5,.g-b--m4of10{width:40%}.g-b--m3of5,.g-b--m6of10{width:60%}.g-b--m4of5,.g-b--m8of10{width:80%}.g-b--m1of6,.g-b--m2of12{width:16.666%}.g-b--m5of6,.g-b--m10of12{width:83.333%}.g-b--m1of8{width:12.5%}.g-b--m3of8{width:37.5%}.g-b--m5of8{width:62.5%}.g-b--m7of8{width:87.5%}.g-b--m1of10{width:10%}.g-b--m3of10{width:30%}.g-b--m7of10{width:70%}.g-b--m9of10{width:90%}.g-b--m1of12{width:8.333%}.g-b--m5of12{width:41.666%}.g-b--m7of12{width:58.333%}.g-b--m11of12{width:91.666%}.g-b--push--m1of1{margin-left:100%}.g-b--push--m1of2,.g-b--push--m2of4,.g-b--push--m3of6,.g-b--push--m4of8,.g-b--push--m5of10,.g-b--push--m6of12{margin-left:50%}.g-b--push--m1of3,.g-b--push--m2of6,.g-b--push--m4of12{margin-left:33.333%}.g-b--push--m2of3,.g-b--push--m4of6,.g-b--push--m8of12{margin-left:66.666%}.g-b--push--m1of4,.g-b--push--m2of8,.g-b--push--m3of12{margin-left:25%}.g-b--push--m3of4,.g-b--push--m6of8,.g-b--push--m9of12{margin-left:75%}.g-b--push--m1of5,.g-b--push--m2of10{margin-left:20%}.g-b--push--m2of5,.g-b--push--m4of10{margin-left:40%}.g-b--push--m3of5,.g-b--push--m6of10{margin-left:60%}.g-b--push--m4of5,.g-b--push--m8of10{margin-left:80%}.g-b--push--m1of6,.g-b--push--m2of12{margin-left:16.666%}.g-b--push--m5of6,.g-b--push--m10of12{margin-left:83.333%}.g-b--push--m1of8{margin-left:12.5%}.g-b--push--m3of8{margin-left:37.5%}.g-b--push--m5of8{margin-left:62.5%}.g-b--push--m7of8{margin-left:87.5%}.g-b--push--m1of10{margin-left:10%}.g-b--push--m3of10{margin-left:30%}.g-b--push--m7of10{margin-left:70%}.g-b--push--m9of10{margin-left:90%}.g-b--push--m1of12{margin-left:8.333%}.g-b--push--m5of12{margin-left:41.666%}.g-b--push--m7of12{margin-left:58.333%}.g-b--push--m11of12{margin-left:91.666%}.g-b--pull--m1of1{margin-right:100%}.g-b--pull--m1of2,.g-b--pull--m2of4,.g-b--pull--m3of6,.g-b--pull--m4of8,.g-b--pull--m5of10,.g-b--pull--m6of12{margin-right:50%}.g-b--pull--m1of3,.g-b--pull--m2of6,.g-b--pull--m4of12{margin-right:33.333%}.g-b--pull--m2of3,.g-b--pull--m4of6,.g-b--pull--m8of12{margin-right:66.666%}.g-b--pull--m1of4,.g-b--pull--m2of8,.g-b--pull--m3of12{margin-right:25%}.g-b--pull--m3of4,.g-b--pull--m6of8,.g-b--pull--m9of12{margin-right:75%}.g-b--pull--m1of5,.g-b--pull--m2of10{margin-right:20%}.g-b--pull--m2of5,.g-b--pull--m4of10{margin-right:40%}.g-b--pull--m3of5,.g-b--pull--m6of10{margin-right:60%}.g-b--pull--m4of5,.g-b--pull--m8of10{margin-right:80%}.g-b--pull--m1of6,.g-b--pull--m2of12{margin-right:16.666%}.g-b--pull--m5of6,.g-b--pull--m10of12{margin-right:83.333%}.g-b--pull--m1of8{margin-right:12.5%}.g-b--pull--m3of8{margin-right:37.5%}.g-b--pull--m5of8{margin-right:62.5%}.g-b--pull--m7of8{margin-right:87.5%}.g-b--pull--m1of10{margin-right:10%}.g-b--pull--m3of10{margin-right:30%}.g-b--pull--m7of10{margin-right:70%}.g-b--pull--m9of10{margin-right:90%}.g-b--pull--m1of12{margin-right:8.333%}.g-b--pull--m5of12{margin-right:41.666%}.g-b--pull--m7of12{margin-right:58.333%}.g-b--pull--m11of12{margin-right:91.666%}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{margin-bottom:.89999rem;padding-top:.10001rem}.title-document,.settings a{font-size:1.25rem}.words,.characters{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog,#zen{font-size:1.25rem}#zen{width:400px}#editor{font-size:1rem}}@media screen and (min-width:46.25em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--t1of1{width:100%}.g-b--t1of2,.g-b--t2of4,.g-b--t3of6,.g-b--t4of8,.g-b--t5of10,.g-b--t6of12{width:50%}.g-b--t1of3,.g-b--t2of6,.g-b--t4of12{width:33.333%}.g-b--t2of3,.g-b--t4of6,.g-b--t8of12{width:66.666%}.g-b--t1of4,.g-b--t2of8,.g-b--t3of12{width:25%}.g-b--t3of4,.g-b--t6of8,.g-b--t9of12{width:75%}.g-b--t1of5,.g-b--t2of10{width:20%}.g-b--t2of5,.g-b--t4of10{width:40%}.g-b--t3of5,.g-b--t6of10{width:60%}.g-b--t4of5,.g-b--t8of10{width:80%}.g-b--t1of6,.g-b--t2of12{width:16.666%}.g-b--t5of6,.g-b--t10of12{width:83.333%}.g-b--t1of8{width:12.5%}.g-b--t3of8{width:37.5%}.g-b--t5of8{width:62.5%}.g-b--t7of8{width:87.5%}.g-b--t1of10{width:10%}.g-b--t3of10{width:30%}.g-b--t7of10{width:70%}.g-b--t9of10{width:90%}.g-b--t1of12{width:8.333%}.g-b--t5of12{width:41.666%}.g-b--t7of12{width:58.333%}.g-b--t11of12{width:91.666%}.g-b--push--t1of1{margin-left:100%}.g-b--push--t1of2,.g-b--push--t2of4,.g-b--push--t3of6,.g-b--push--t4of8,.g-b--push--t5of10,.g-b--push--t6of12{margin-left:50%}.g-b--push--t1of3,.g-b--push--t2of6,.g-b--push--t4of12{margin-left:33.333%}.g-b--push--t2of3,.g-b--push--t4of6,.g-b--push--t8of12{margin-left:66.666%}.g-b--push--t1of4,.g-b--push--t2of8,.g-b--push--t3of12{margin-left:25%}.g-b--push--t3of4,.g-b--push--t6of8,.g-b--push--t9of12{margin-left:75%}.g-b--push--t1of5,.g-b--push--t2of10{margin-left:20%}.g-b--push--t2of5,.g-b--push--t4of10{margin-left:40%}.g-b--push--t3of5,.g-b--push--t6of10{margin-left:60%}.g-b--push--t4of5,.g-b--push--t8of10{margin-left:80%}.g-b--push--t1of6,.g-b--push--t2of12{margin-left:16.666%}.g-b--push--t5of6,.g-b--push--t10of12{margin-left:83.333%}.g-b--push--t1of8{margin-left:12.5%}.g-b--push--t3of8{margin-left:37.5%}.g-b--push--t5of8{margin-left:62.5%}.g-b--push--t7of8{margin-left:87.5%}.g-b--push--t1of10{margin-left:10%}.g-b--push--t3of10{margin-left:30%}.g-b--push--t7of10{margin-left:70%}.g-b--push--t9of10{margin-left:90%}.g-b--push--t1of12{margin-left:8.333%}.g-b--push--t5of12{margin-left:41.666%}.g-b--push--t7of12{margin-left:58.333%}.g-b--push--t11of12{margin-left:91.666%}.g-b--pull--t1of1{margin-right:100%}.g-b--pull--t1of2,.g-b--pull--t2of4,.g-b--pull--t3of6,.g-b--pull--t4of8,.g-b--pull--t5of10,.g-b--pull--t6of12{margin-right:50%}.g-b--pull--t1of3,.g-b--pull--t2of6,.g-b--pull--t4of12{margin-right:33.333%}.g-b--pull--t2of3,.g-b--pull--t4of6,.g-b--pull--t8of12{margin-right:66.666%}.g-b--pull--t1of4,.g-b--pull--t2of8,.g-b--pull--t3of12{margin-right:25%}.g-b--pull--t3of4,.g-b--pull--t6of8,.g-b--pull--t9of12{margin-right:75%}.g-b--pull--t1of5,.g-b--pull--t2of10{margin-right:20%}.g-b--pull--t2of5,.g-b--pull--t4of10{margin-right:40%}.g-b--pull--t3of5,.g-b--pull--t6of10{margin-right:60%}.g-b--pull--t4of5,.g-b--pull--t8of10{margin-right:80%}.g-b--pull--t1of6,.g-b--pull--t2of12{margin-right:16.666%}.g-b--pull--t5of6,.g-b--pull--t10of12{margin-right:83.333%}.g-b--pull--t1of8{margin-right:12.5%}.g-b--pull--t3of8{margin-right:37.5%}.g-b--pull--t5of8{margin-right:62.5%}.g-b--pull--t7of8{margin-right:87.5%}.g-b--pull--t1of10{margin-right:10%}.g-b--pull--t3of10{margin-right:30%}.g-b--pull--t7of10{margin-right:70%}.g-b--pull--t9of10{margin-right:90%}.g-b--pull--t1of12{margin-right:8.333%}.g-b--pull--t5of12{margin-right:41.666%}.g-b--pull--t7of12{margin-right:58.333%}.g-b--pull--t11of12{margin-right:91.666%}.splashscreen-dillinger{width:500px}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{font-size:1.25rem;margin-bottom:.89999rem;padding-top:.10001rem}.menu .menu-item--save-to,.menu .menu-item--import-from{display:block}.menu .menu-item--preview,.menu .menu-item--save-to.in-sidebar,.menu .menu-item--import-from.in-sidebar{display:none}.settings a{font-size:1.25rem}.words,.characters{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog{font-size:1.25rem}.enter-zen-mode{display:block}.close-zen-mode{right:3rem;top:3rem}#zen{font-size:1.25rem;width:500px}.split-editor{border-right:1px solid #E8E8E8;float:left;padding-right:16px;width:50%}.show-preview .split-editor{display:block}.split-preview{display:block;float:right;position:relative;top:0;width:50%}#editor{font-size:1rem}.preview-mode-toggle-src,.preview-mode-toggle-html{display:block}}@media screen and (min-width:62.5em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--d1of1{width:100%}.g-b--d1of2,.g-b--d2of4,.g-b--d3of6,.g-b--d4of8,.g-b--d5of10,.g-b--d6of12{width:50%}.g-b--d1of3,.g-b--d2of6,.g-b--d4of12{width:33.333%}.g-b--d2of3,.g-b--d4of6,.g-b--d8of12{width:66.666%}.g-b--d1of4,.g-b--d2of8,.g-b--d3of12{width:25%}.g-b--d3of4,.g-b--d6of8,.g-b--d9of12{width:75%}.g-b--d1of5,.g-b--d2of10{width:20%}.g-b--d2of5,.g-b--d4of10{width:40%}.g-b--d3of5,.g-b--d6of10{width:60%}.g-b--d4of5,.g-b--d8of10{width:80%}.g-b--d1of6,.g-b--d2of12{width:16.666%}.g-b--d5of6,.g-b--d10of12{width:83.333%}.g-b--d1of8{width:12.5%}.g-b--d3of8{width:37.5%}.g-b--d5of8{width:62.5%}.g-b--d7of8{width:87.5%}.g-b--d1of10{width:10%}.g-b--d3of10{width:30%}.g-b--d7of10{width:70%}.g-b--d9of10{width:90%}.g-b--d1of12{width:8.333%}.g-b--d5of12{width:41.666%}.g-b--d7of12{width:58.333%}.g-b--d11of12{width:91.666%}.g-b--push--d1of1{margin-left:100%}.g-b--push--d1of2,.g-b--push--d2of4,.g-b--push--d3of6,.g-b--push--d4of8,.g-b--push--d5of10,.g-b--push--d6of12{margin-left:50%}.g-b--push--d1of3,.g-b--push--d2of6,.g-b--push--d4of12{margin-left:33.333%}.g-b--push--d2of3,.g-b--push--d4of6,.g-b--push--d8of12{margin-left:66.666%}.g-b--push--d1of4,.g-b--push--d2of8,.g-b--push--d3of12{margin-left:25%}.g-b--push--d3of4,.g-b--push--d6of8,.g-b--push--d9of12{margin-left:75%}.g-b--push--d1of5,.g-b--push--d2of10{margin-left:20%}.g-b--push--d2of5,.g-b--push--d4of10{margin-left:40%}.g-b--push--d3of5,.g-b--push--d6of10{margin-left:60%}.g-b--push--d4of5,.g-b--push--d8of10{margin-left:80%}.g-b--push--d1of6,.g-b--push--d2of12{margin-left:16.666%}.g-b--push--d5of6,.g-b--push--d10of12{margin-left:83.333%}.g-b--push--d1of8{margin-left:12.5%}.g-b--push--d3of8{margin-left:37.5%}.g-b--push--d5of8{margin-left:62.5%}.g-b--push--d7of8{margin-left:87.5%}.g-b--push--d1of10{margin-left:10%}.g-b--push--d3of10{margin-left:30%}.g-b--push--d7of10{margin-left:70%}.g-b--push--d9of10{margin-left:90%}.g-b--push--d1of12{margin-left:8.333%}.g-b--push--d5of12{margin-left:41.666%}.g-b--push--d7of12{margin-left:58.333%}.g-b--push--d11of12{margin-left:91.666%}.g-b--pull--d1of1{margin-right:100%}.g-b--pull--d1of2,.g-b--pull--d2of4,.g-b--pull--d3of6,.g-b--pull--d4of8,.g-b--pull--d5of10,.g-b--pull--d6of12{margin-right:50%}.g-b--pull--d1of3,.g-b--pull--d2of6,.g-b--pull--d4of12{margin-right:33.333%}.g-b--pull--d2of3,.g-b--pull--d4of6,.g-b--pull--d8of12{margin-right:66.666%}.g-b--pull--d1of4,.g-b--pull--d2of8,.g-b--pull--d3of12{margin-right:25%}.g-b--pull--d3of4,.g-b--pull--d6of8,.g-b--pull--d9of12{margin-right:75%}.g-b--pull--d1of5,.g-b--pull--d2of10{margin-right:20%}.g-b--pull--d2of5,.g-b--pull--d4of10{margin-right:40%}.g-b--pull--d3of5,.g-b--pull--d6of10{margin-right:60%}.g-b--pull--d4of5,.g-b--pull--d8of10{margin-right:80%}.g-b--pull--d1of6,.g-b--pull--d2of12{margin-right:16.666%}.g-b--pull--d5of6,.g-b--pull--d10of12{margin-right:83.333%}.g-b--pull--d1of8{margin-right:12.5%}.g-b--pull--d3of8{margin-right:37.5%}.g-b--pull--d5of8{margin-right:62.5%}.g-b--pull--d7of8{margin-right:87.5%}.g-b--pull--d1of10{margin-right:10%}.g-b--pull--d3of10{margin-right:30%}.g-b--pull--d7of10{margin-right:70%}.g-b--pull--d9of10{margin-right:90%}.g-b--pull--d1of12{margin-right:8.333%}.g-b--pull--d5of12{margin-right:41.666%}.g-b--pull--d7of12{margin-right:58.333%}.g-b--pull--d11of12{margin-right:91.666%}.splashscreen-dillinger{width:700px}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{font-size:1.25rem;margin-bottom:.89999rem;padding-top:.10001rem}.menu .menu-item--export-as{display:block}.menu .menu-item--preview{display:none}.settings a{font-size:1.25rem}.words,.characters{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog,#zen{font-size:1.25rem}#zen{width:700px}#editor{font-size:1rem}}@media screen and (min-width:87.5em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.splashscreen-dillinger{width:800px}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{margin-bottom:.89999rem;padding-top:.10001rem}.title-document,.settings a{font-size:1.25rem}.words,.characters{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog,#zen{font-size:1.25rem}#editor{font-size:1rem}}@media (min-width:768px){.form-inline .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.form-inline .form-control{display:inline-block;width:auto;vertical-align:middle}.form-inline .input-group{display:inline-table;vertical-align:middle}.form-inline .input-group .input-group-addon,.form-inline .input-group .input-group-btn,.form-inline .input-group .form-control{width:auto}.form-inline .input-group>.form-control{width:100%}.form-inline .control-label{margin-bottom:0;vertical-align:middle}.form-inline .radio,.form-inline .checkbox{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.form-inline .radio label,.form-inline .checkbox label{padding-left:0}.form-inline .radio input[type="radio"],.form-inline .checkbox input[type="checkbox"]{position:relative;margin-left:0}.form-inline .has-feedback .form-control-feedback{top:0}.form-horizontal .control-label{text-align:right;margin-bottom:0;padding-top:7px}.form-horizontal .form-group-lg .control-label{padding-top:14.3px}.form-horizontal .form-group-sm .control-label{padding-top:6px}.modal-dialog{width:600px;margin:30px auto}.modal-content{box-shadow:0 5px 15px rgba(0,0,0,.5)}.modal-sm{width:300px}}@media (min-width:992px){.modal-lg{width:900px}}@media screen and (max-width:1200px){#_default_{max-width:30%}#_default_ ._default_{font-size:.825rem;line-height:.875rem;padding:12px 12px 6px 24px;text-align:justify}}@media screen and (max-width:1100px){#_default_{max-width:27%}#_default_ ._default_{font-size:.8rem;line-height:.85rem;padding:12px 6px 6px 24px;text-align:justify}}@media screen and (max-width:1000px){#_default_{max-width:24%}#_default_ ._default_{font-size:.775rem;line-height:.8rem;padding:12px 6px 6px 24px;text-align:justify}}@media screen and (max-width:900px){#_default_{max-width:30%}}@media screen and (max-width:767px){.table-responsive{width:100%;margin-bottom:15px;overflow-y:hidden;overflow-x:auto;-ms-overflow-style:-ms-autohiding-scrollbar;border:1px solid #ddd;-webkit-overflow-scrolling:touch}.table-responsive>.table{margin-bottom:0}.table-responsive>.table>thead>tr>th,.table-responsive>.table>thead>tr>td,.table-responsive>.table>tbody>tr>th,.table-responsive>.table>tbody>tr>td,.table-responsive>.table>tfoot>tr>th,.table-responsive>.table>tfoot>tr>td{white-space:nowrap}.table-responsive>.table-bordered{border:0}.table-responsive>.table-bordered>thead>tr>th:first-child,.table-responsive>.table-bordered>thead>tr>td:first-child,.table-responsive>.table-bordered>tbody>tr>th:first-child,.table-responsive>.table-bordered>tbody>tr>td:first-child,.table-responsive>.table-bordered>tfoot>tr>th:first-child,.table-responsive>.table-bordered>tfoot>tr>td:first-child{border-left:0}.table-responsive>.table-bordered>thead>tr>th:last-child,.table-responsive>.table-bordered>thead>tr>td:last-child,.table-responsive>.table-bordered>tbody>tr>th:last-child,.table-responsive>.table-bordered>tbody>tr>td:last-child,.table-responsive>.table-bordered>tfoot>tr>th:last-child,.table-responsive>.table-bordered>tfoot>tr>td:last-child{border-right:0}.table-responsive>.table-bordered>tbody>tr:last-child>th,.table-responsive>.table-bordered>tbody>tr:last-child>td,.table-responsive>.table-bordered>tfoot>tr:last-child>th,.table-responsive>.table-bordered>tfoot>tr:last-child>td{border-bottom:0}}@media screen and (max-width:720px){#_default_{max-width:60%}#_default_ ._default_{font-size:.75rem;line-height:1rem;padding:12px 24px}}@media screen and (max-width:620px){#_default_{max-width:50%}#_default_ ._default_{font-size:.66rem;letter-spacing:1px;line-height:1rem;padding:10px 24px}}@media screen and (max-width:520px){#_default_ ._default_{font-size:.4rem;line-height:.875rem;padding:6px 12px 6px 24px;text-align:justify}}@media screen and (max-width:460px){#_default_{display:none}}@media screen and (max-width:46.1875em){.editor-header{display:none}.editor-header--first{display:block;width:100%}}</style></head><body id="preview">
+<h1 class="code-line" data-line-start=0 data-line-end=1 ><a id="AI__API__0"></a>AI 对话系统 API 文档</h1>
+<h3 class="code-line" data-line-start=1 data-line-end=2 ><a id="1__1"></a>1. 概述</h3>
+<p class="has-line-data" data-line-start="2" data-line-end="3">本 API 基于 Go 语言和 Gin 框架构建，是一套完整的 AI 对话系统接口，支持用户认证、对话管理、Token 充值、实时 WebSocket 通信等核心功能。系统采用 JWT（JSON Web Token）实现身份验证，并通过时间戳验证机制防止重放攻击，保障接口安全性。</p>
+<h5 class="code-line" data-line-start=3 data-line-end=4 ><a id="_3"></a>技术栈</h5>
+<h6 class="code-line" data-line-start=4 data-line-end=5 ><a id="Go_118_4"></a>开发语言：Go 1.18+</h6>
+<h6 class="code-line" data-line-start=5 data-line-end=6 ><a id="Web_Gin_v19_5"></a>Web 框架：Gin v1.9+</h6>
+<h6 class="code-line" data-line-start=6 data-line-end=7 ><a id="ORM_GORM_v20_6"></a>ORM 库：GORM v2.0+</h6>
+<h6 class="code-line" data-line-start=7 data-line-end=8 ><a id="MySQL_80_7"></a>数据库：MySQL 8.0+</h6>
+<h6 class="code-line" data-line-start=8 data-line-end=9 ><a id="JWTJSON_Web_Token_8"></a>认证方式：JWT（JSON Web Token）</h6>
+<h6 class="code-line" data-line-start=9 data-line-end=10 ><a id="WebSocket_9"></a>实时通信：WebSocket</h6>
+<h6 class="code-line" data-line-start=10 data-line-end=11 ><a id="AI__Ollama_API_10"></a>AI 交互：集成 Ollama API（支持多模型调用）</h6>
+<h3 class="code-line" data-line-start=11 data-line-end=12 ><a id="2__11"></a>2. 认证机制</h3>
+<h4 class="code-line" data-line-start=12 data-line-end=13 ><a id="21_JWT_Token__12"></a>2.1 JWT Token 认证</h4>
+<p class="has-line-data" data-line-start="13" data-line-end="14">所有需要用户权限的 API 端点（标记为 “需认证”），必须在请求头中携带有效的 JWT Token，格式如下：</p>
+<pre><code class="has-line-data" data-line-start="15" data-line-end="18">http
+Authorization: Bearer &lt;your_jwt_token&gt;
+</code></pre>
+<h6 class="code-line" data-line-start=18 data-line-end=19 ><a id="Token_24__18"></a>Token 有效期：24 小时（从生成时间起算）</h6>
+<h6 class="code-line" data-line-start=19 data-line-end=20 ><a id="Token__ID_19"></a>Token 包含信息：用户 ID、邮箱、用户名（用于权限校验）</h6>
+<h4 class="code-line" data-line-start=20 data-line-end=21 ><a id="22__20"></a>2.2 时间戳验证（防重放攻击）</h4>
+<p class="has-line-data" data-line-start="21" data-line-end="25">为防止请求被恶意重放，所有需认证的接口必须额外携带 X-Timestamp  X-Nonce  X-Signature 请求头，值为当前 Unix 时间戳（秒级）。<br>
+服务器会验证时间戳有效性，仅接受与服务器当前时间偏差在 10 秒内的请求。<br>
+每个nonce在10分钟内只允许使用一次，重复使用会被拒绝请求。<br>
+X-Signature由请求头、请求方法、路由、URL参数、请求体共同拼接为字符串，再由密钥签名，在服务端校验，以防止数据篡改。(拼接顺序：HTTP方法 &amp; 路由 &amp; 时间戳 &amp; nonce &amp; 查询参数 &amp; 请求体)</p>
+<h6 class="code-line" data-line-start=26 data-line-end=27 ><a id="XSignature__26"></a>X-Signature 签名生成规则：</h6>
+<h6 class="code-line" data-line-start=27 data-line-end=28 ><a id="1_HTTPnonce_27"></a>1. 构建签名字符串，格式为：HTTP方法&amp;请求路径&amp;时间戳&amp;nonce&amp;查询参数&amp;请求体</h6>
+<h6 class="code-line" data-line-start=28 data-line-end=29 ><a id="2__HMACSHA256__28"></a>2. 使用 HMAC-SHA256 算法和共享密钥对签名字符串进行签名</h6>
+<h6 class="code-line" data-line-start=29 data-line-end=30 ><a id="3__29"></a>3. 将签名结果转换为十六进制字符串</h6>
+<h6 class="code-line" data-line-start=31 data-line-end=32 ><a id="_31"></a>签名字符串构建示例：</h6>
+<h6 class="code-line" data-line-start=32 data-line-end=33 ><a id="GET_32"></a>GET请求（带查询参数）：</h6>
+<pre><code class="has-line-data" data-line-start="34" data-line-end="36">GET&amp;/api/conversations&amp;1716215400&amp;5d8e1b7b8e4b4a9d9c7e1f8a7b8c9d0e&amp;page=1&amp;pageSize=10
+</code></pre>
+<h6 class="code-line" data-line-start=36 data-line-end=37 ><a id="POST_36"></a>POST请求（带请求体）：</h6>
+<pre><code class="has-line-data" data-line-start="38" data-line-end="40">POST&amp;/api/recharge&amp;1716215400&amp;5d8e1b7b8e4b4a9d9c7e1f8a7b8c9d0e&amp;{&quot;tokenAmount&quot;:100}
+</code></pre>
+<h6 class="code-line" data-line-start=40 data-line-end=41 ><a id="WebSocket_40"></a>WebSocket连接请求：</h6>
+<pre><code class="has-line-data" data-line-start="42" data-line-end="44">GET&amp;/ws/ai&amp;1716215400&amp;5d8e1b7b8e4b4a9d9c7e1f8a7b8c9d0e
+</code></pre>
+<h5 class="code-line" data-line-start=45 data-line-end=46 ><a id="221_Python__45"></a>2.2.1 Python 时间戳生成示例</h5>
+<pre><code class="has-line-data" data-line-start="47" data-line-end="239">Python
+import time
+import requests
+import json
+import secrets
+import hashlib
+import hmac
+
+def _build_sign_string(method, path, timestamp, nonce, query_params=None, body=None):
+    &quot;&quot;&quot;构建签名字符串，与服务端保持一致&quot;&quot;&quot;
+    # 1. 添加HTTP方法
+    sign_parts = [method.upper()]
+        
+    # 2. 添加路由
+    sign_parts.append(path)
+        
+    # 3. 添加时间戳
+    sign_parts.append(str(timestamp))
+        
+    # 4. 添加nonce
+    sign_parts.append(nonce)
+        
+    # 5. 添加查询参数（按键排序）
+    if query_params:
+        query_parts = []
+        for key in sorted(query_params.keys()):
+            value = query_params[key]
+            # 处理不同类型的参数值
+            if isinstance(value, list):
+                for v in sorted(value):
+                    query_parts.append(f&quot;{key}={v}&quot;)
+            else:
+                query_parts.append(f&quot;{key}={value}&quot;)
+        if query_parts:
+            sign_parts.append(&quot;&amp;&quot;.join(query_parts))
+        
+    # 6. 添加请求体（如果有）
+    if body:
+        sign_parts.append(body)
+            
+    # 使用&amp;连接所有部分
+    return &quot;&amp;&quot;.join(sign_parts)
+
+def _generate_nonce():
+    &quot;&quot;&quot;生成加密安全的随机nonce&quot;&quot;&quot;
+    return secrets.token_hex(16)  # 生成32位十六进制随机字符串
+
+# 示例1: PUT请求包含请求体
+# 1. 准备请求参数
+method = &quot;PUT&quot;
+path = &quot;/api/conversations/123/title&quot;  # 注意这里必须包含 /title
+timestamp = str(int(time.time()))
+nonce = _generate_nonce()
+query_params = None  # 没有查询参数
+
+# 2. 准备请求体
+request_body = {
+    &quot;title&quot;: &quot;更新的对话标题&quot;  # 只有title字段，没有system_prompt
+}
+body_json = json.dumps(request_body, separators=(',', ':'))
+
+# 3. 构建签名字符串
+sign_string = _build_sign_string(method, path, timestamp, nonce, query_params, body_json)
+print(f&quot;签名字符串: {sign_string}&quot;)
+
+# 4. 生成签名
+signature = hmac.new(
+    secret_key.encode('utf-8'),
+    sign_string.encode('utf-8'),
+    hashlib.sha256
+).hexdigest()
+
+# 5. 构造请求头
+headers = {
+    &quot;Authorization&quot;: &quot;Bearer your_jwt_token_here&quot;,
+    &quot;X-Timestamp&quot;: timestamp,
+    &quot;X-Nonce&quot;: nonce,
+    &quot;X-Signature&quot;: signature,
+    &quot;Content-Type&quot;: &quot;application/json&quot;
+}
+
+# 6. 发送请求
+try:
+    response = requests.put(
+        url=&quot;http://localhost:8080&quot; + path,
+        headers=headers,
+        data=body_json
+    )
+    print(f&quot;PUT请求响应状态码: {response.status_code}&quot;)
+    print(f&quot;PUT请求响应结果: {response.json()}&quot;)
+except Exception as e:
+    print(f&quot;PUT请求发生错误: {e}&quot;)
+
+# 示例2：GET请求带查询参数（获取对话列表） 
+print(&quot;=== 示例：GET请求带查询参数（获取对话列表）===&quot;) 
+# 1. 准备请求参数 
+method = &quot;GET&quot; 
+path = &quot;/api/conversations&quot; 
+timestamp = str(int(time.time())) 
+nonce = _generate_nonce() 
+
+# 2. 准备查询参数 
+query_params = {
+    &quot;page&quot;: 1,
+    &quot;pageSize&quot;: 5
+}
+
+# GET请求没有请求体 
+body_json = None
+
+# 3. 构建签名字符串 
+sign_string = _build_sign_string(method, path, timestamp, nonce, query_params, body_json) 
+print(f&quot;签名字符串: {sign_string}&quot;) 
+
+# 4. 生成签名 
+secret_key = &quot;your_shared_secret_key&quot; 
+signature = hmac.new( 
+    secret_key.encode('utf-8'), 
+    sign_string.encode('utf-8'), 
+    hashlib.sha256 
+).hexdigest() 
+
+# 5. 构造请求头（包含认证信息） 
+headers = { 
+    &quot;Authorization&quot;: &quot;Bearer your_jwt_token_here&quot;,  # 替换为实际的JWT token
+    &quot;X-Timestamp&quot;: timestamp, 
+    &quot;X-Nonce&quot;: nonce, 
+    &quot;X-Signature&quot;: signature, 
+    &quot;Content-Type&quot;: &quot;application/json&quot; 
+} 
+
+# 6. 发送请求 
+try: 
+    response = requests.get( 
+        url=&quot;http://localhost:8080&quot; + path, 
+        params=query_params,  # GET请求通过params传递查询参数
+        headers=headers 
+    ) 
+    print(f&quot;GET请求响应状态码: {response.status_code}&quot;) 
+    print(f&quot;GET请求响应结果: {response.json()}&quot;) 
+except Exception as e: 
+    print(f&quot;GET请求发生错误: {e}&quot;)
+
+# 示例3: WebSocket连接请求（包含签名）
+def _get_headers(self):
+    &quot;&quot;&quot;获取包含认证、时间戳、nonce和签名的请求头&quot;&quot;&quot;
+    headers = {
+        &quot;Content-Type&quot;: &quot;application/json&quot;
+    }
+    if self.token:
+        headers[&quot;Authorization&quot;] = f&quot;Bearer {self.token}&quot;
+        timestamp = str(int(time.time()))
+        nonce = self._generate_nonce()
+            
+        headers[&quot;X-Timestamp&quot;] = timestamp
+        headers[&quot;X-Nonce&quot;] = nonce
+            
+        # 计算签名
+        sign_string = self._build_sign_string(&quot;GET&quot;, &quot;/ws/ai&quot;, timestamp, nonce)
+        # 创建HMAC签名
+        signature = hmac.new(
+            self.secret_key.encode('utf-8'),
+            sign_string.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        headers[&quot;X-Signature&quot;] = signature
+                
+    return headers
+
+def connect(self):
+    &quot;&quot;&quot;连接到WebSocket服务器&quot;&quot;&quot;
+    headers = self._get_headers()
+
+    # 创建WebSocket连接
+    self.ws = websocket.WebSocketApp(
+        self.ws_url,
+        header=headers,
+        on_message=self.on_message,
+        on_error=self.on_error,
+        on_close=self.on_close
+    )
+    self.ws.on_open = self.on_open
+
+    # 运行WebSocket客户端
+    try:
+        print(f&quot;正在连接到 {self.ws_url}...&quot;)
+        self.ws.run_forever()
+    except KeyboardInterrupt:
+        print(&quot;\n程序被用户中断&quot;)
+        if self.ws:
+            self.ws.close()
+</code></pre>
+<h4 class="code-line" data-line-start=240 data-line-end=241 ><a id="222__240"></a>2.2.2 客户端收到的响应种类</h4>
+<p class="has-line-data" data-line-start="241" data-line-end="242">客户端在与服务端交互时，会收到以下几种类型的响应：</p>
+<ol>
+<li class="has-line-data" data-line-start="243" data-line-end="259">
+<p class="has-line-data" data-line-start="243" data-line-end="244"><strong>认证响应</strong>（连接建立后立即返回）</p>
+<ul>
+<li class="has-line-data" data-line-start="244" data-line-end="251">成功响应：<pre><code class="has-line-data" data-line-start="246" data-line-end="251" class="language-json">{
+  "<span class="hljs-attribute">success</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"认证成功，可以开始聊天"</span>
+</span>}
+</code></pre>
+</li>
+<li class="has-line-data" data-line-start="251" data-line-end="259">失败响应：<pre><code class="has-line-data" data-line-start="253" data-line-end="258" class="language-json">{
+  "<span class="hljs-attribute">success</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"无效或过期的Token"</span>
+</span>}
+</code></pre>
+</li>
+</ul>
+</li>
+<li class="has-line-data" data-line-start="259" data-line-end="275">
+<p class="has-line-data" data-line-start="259" data-line-end="260"><strong>流式响应</strong>（AI回答过程中持续返回）</p>
+<ul>
+<li class="has-line-data" data-line-start="260" data-line-end="267">中间响应（包含回答片段）：<pre><code class="has-line-data" data-line-start="262" data-line-end="267" class="language-json">{
+  "<span class="hljs-attribute">text</span>": <span class="hljs-value"><span class="hljs-string">"这是AI回答的一部分内容"</span></span>,
+  "<span class="hljs-attribute">done</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+</span>}
+</code></pre>
+</li>
+<li class="has-line-data" data-line-start="267" data-line-end="275">完成响应（标记回答结束）：<pre><code class="has-line-data" data-line-start="269" data-line-end="274" class="language-json">{
+  "<span class="hljs-attribute">text</span>": <span class="hljs-value"><span class="hljs-string">""</span></span>,
+  "<span class="hljs-attribute">done</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+</span>}
+</code></pre>
+</li>
+</ul>
+</li>
+<li class="has-line-data" data-line-start="275" data-line-end="291">
+<p class="has-line-data" data-line-start="275" data-line-end="276"><strong>错误响应</strong>（发生错误时返回）</p>
+<ul>
+<li class="has-line-data" data-line-start="276" data-line-end="283">一般错误：<pre><code class="has-line-data" data-line-start="278" data-line-end="283" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"token数量不足，请充值"</span></span>,
+  "<span class="hljs-attribute">done</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+</span>}
+</code></pre>
+</li>
+<li class="has-line-data" data-line-start="283" data-line-end="291">系统错误：<pre><code class="has-line-data" data-line-start="285" data-line-end="290" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"服务器内部错误"</span></span>,
+  "<span class="hljs-attribute">done</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+</span>}
+</code></pre>
+</li>
+</ul>
+</li>
+<li class="has-line-data" data-line-start="291" data-line-end="306">
+<p class="has-line-data" data-line-start="291" data-line-end="292"><strong>API接口响应</strong>（HTTP请求的响应）</p>
+<ul>
+<li class="has-line-data" data-line-start="292" data-line-end="299">成功响应：<pre><code class="has-line-data" data-line-start="294" data-line-end="299" class="language-json">{
+  "message": "操作成功",
+  "data": {...}
+}
+</code></pre>
+</li>
+<li class="has-line-data" data-line-start="299" data-line-end="306">错误响应：<pre><code class="has-line-data" data-line-start="301" data-line-end="305" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"具体错误信息"</span>
+</span>}
+</code></pre>
+</li>
+</ul>
+</li>
+</ol>
+<h3 class="code-line" data-line-start=306 data-line-end=307 ><a id="3_API__306"></a>3. API 接口详情</h3>
+<h4 class="code-line" data-line-start=307 data-line-end=308 ><a id="31__307"></a>3.1 认证相关接口（无需前置认证）</h4>
+<h5 class="code-line" data-line-start=308 data-line-end=309 ><a id="311__308"></a>3.1.1 用户注册</h5>
+<h6 class="code-line" data-line-start=309 data-line-end=310 ><a id="URLapiauthregister_309"></a>URL：/api/auth/register</h6>
+<h6 class="code-line" data-line-start=310 data-line-end=311 ><a id="POST_310"></a>方法：POST</h6>
+<h6 class="code-line" data-line-start=311 data-line-end=312 ><a id="ContentType_applicationjson_311"></a>请求头：Content-Type: application/json</h6>
+<h6 class="code-line" data-line-start=312 data-line-end=313 ><a id="_312"></a>请求体：</h6>
+<pre><code class="has-line-data" data-line-start="314" data-line-end="320" class="language-json">{
+  "username": "test_user",    // 用户名（必填，唯一）
+  "email": "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="572332242317322f363a273b327934383a">[email&#160;protected]</a>",// 邮箱（必填，唯一，需符合邮箱格式）
+  "password": "Test123456"    // 密码（必填，最少6位）
+}
+</code></pre>
+<h6 class="code-line" data-line-start=320 data-line-end=321 ><a id="201_Created_320"></a>成功响应（201 Created）：</h6>
+<pre><code class="has-line-data" data-line-start="322" data-line-end="328" class="language-json">{
+  "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+  "<span class="hljs-attribute">username</span>": <span class="hljs-value"><span class="hljs-string">"test_user"</span></span>,
+  "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="423627313602273a232f322e276c212d2f">[email&#160;protected]</a>"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=328 data-line-end=329 ><a id="_328"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="330" data-line-end="331">400 Bad Request：请求参数错误（如邮箱格式无效、密码长度不足）</p>
+<pre><code class="has-line-data" data-line-start="332" data-line-end="336" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求参数错误: Key: 'RegisterPayload.Email' Error:Field validation for 'Email' failed on the 'email' tag"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="336" data-line-end="337">409 Conflict：邮箱已被注册</p>
+<pre><code class="has-line-data" data-line-start="338" data-line-end="342" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"该邮箱已被注册"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="342" data-line-end="343">500 Internal Server Error：服务器内部错误（如密码加密失败、数据库写入失败）</p>
+<pre><code class="has-line-data" data-line-start="344" data-line-end="348" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"密码加密失败"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=348 data-line-end=349 ><a id="312__348"></a>3.1.2 用户登录</h5>
+<h6 class="code-line" data-line-start=349 data-line-end=350 ><a id="URLapiauthlogin_349"></a>URL：/api/auth/login</h6>
+<h6 class="code-line" data-line-start=350 data-line-end=351 ><a id="POST_350"></a>方法：POST</h6>
+<h6 class="code-line" data-line-start=351 data-line-end=352 ><a id="ContentType_applicationjson_351"></a>请求头：Content-Type: application/json</h6>
+<h6 class="code-line" data-line-start=352 data-line-end=353 ><a id="_352"></a>请求体：</h6>
+<pre><code class="has-line-data" data-line-start="354" data-line-end="359" class="language-json">{
+  "email": "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb9f8e989fab8e938a869b878ec5888486">[email&#160;protected]</a>",// 登录邮箱（必填）
+  "password": "Test123456"    // 登录密码（必填）
+}
+</code></pre>
+<h6 class="code-line" data-line-start=359 data-line-end=360 ><a id="200_OK_359"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="361" data-line-end="372" class="language-json">{
+  "message": "登录成功",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // JWT Token
+  "user": {
+    "id": 1,
+    "username": "test_user",
+    "email": "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="becadbcdcafedbc6dfd3ced2db90ddd1d3">[email&#160;protected]</a>",
+    "tokenCount": 10 // 初始Token数量（默认10）
+  }
+}
+</code></pre>
+<h6 class="code-line" data-line-start=372 data-line-end=373 ><a id="_372"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="374" data-line-end="375">400 Bad Request：请求参数错误</p>
+<pre><code class="has-line-data" data-line-start="376" data-line-end="380" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求参数错误: Key: 'LoginPayload.Email' Error:Field validation for 'Email' failed on the 'email' tag"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="380" data-line-end="381">401 Unauthorized：邮箱或密码错误（为安全起见，统一返回此提示，不区分具体错误）</p>
+<pre><code class="has-line-data" data-line-start="382" data-line-end="386" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"邮箱或密码不正确"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="386" data-line-end="387">500 Internal Server Error：Token 生成失败</p>
+<pre><code class="has-line-data" data-line-start="388" data-line-end="392" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"生成 Token 失败"</span>
+</span>}
+</code></pre>
+<h4 class="code-line" data-line-start=392 data-line-end=393 ><a id="32__392"></a>3.2 用户相关接口（需认证）</h4>
+<h5 class="code-line" data-line-start=393 data-line-end=394 ><a id="321__393"></a>3.2.1 删除用户数据</h5>
+<h6 class="code-line" data-line-start=394 data-line-end=395 ><a id="URLapiuser_394"></a>URL：/api/user</h6>
+<h6 class="code-line" data-line-start=395 data-line-end=396 ><a id="DELETE_395"></a>方法：DELETE</h6>
+<h6 class="code-line" data-line-start=396 data-line-end=397 ><a id="_396"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="398" data-line-end="403">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=404 data-line-end=405 ><a id="200_OK_404"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="406" data-line-end="410" class="language-json">{
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"用户数据已成功删除"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=410 data-line-end=411 ><a id="_410"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="412" data-line-end="413">401 Unauthorized：未认证（无 Token 或 Token 无效）</p>
+<pre><code class="has-line-data" data-line-start="414" data-line-end="418" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"用户未认证"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="418" data-line-end="419">500 Internal Server Error：数据库事务失败（如删除对话、消息时出错）</p>
+<pre><code class="has-line-data" data-line-start="420" data-line-end="424" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"查找用户对话时出错: record not found"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=424 data-line-end=425 ><a id="325__Token__424"></a>3.2.5 获取用户 Token 信息</h5>
+<h5 class="code-line" data-line-start=425 data-line-end=426 ><a id="323__425"></a>3.2.3 更新用户信息</h5>
+<h6 class="code-line" data-line-start=426 data-line-end=427 ><a id="URLapiuser_426"></a>URL：/api/user</h6>
+<h6 class="code-line" data-line-start=427 data-line-end=428 ><a id="PUT_427"></a>方法：PUT</h6>
+<h6 class="code-line" data-line-start=428 data-line-end=429 ><a id="_428"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="430" data-line-end="435">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=436 data-line-end=437 ><a id="_436"></a>请求体：</h6>
+<pre><code class="has-line-data" data-line-start="438" data-line-end="443" class="language-json">{
+  "username": "new_username",  // 新用户名（可选）
+  "email": "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="86e8e3f1c6e3fee7ebf6eae3a8e5e9eb">[email&#160;protected]</a>"   // 新邮箱（可选）
+}
+</code></pre>
+<h6 class="code-line" data-line-start=443 data-line-end=444 ><a id="200_OK_443"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="445" data-line-end="455" class="language-json">{
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"用户信息更新成功"</span></span>,
+  "<span class="hljs-attribute">user</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+    "<span class="hljs-attribute">username</span>": <span class="hljs-value"><span class="hljs-string">"new_username"</span></span>,
+    "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e48a8193a4819c8589948881ca878b89">[email&#160;protected]</a>"</span></span>,
+    "<span class="hljs-attribute">tokenCount</span>": <span class="hljs-value"><span class="hljs-number">10</span>
+  </span>}
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=455 data-line-end=456 ><a id="_455"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="457" data-line-end="458">400 Bad Request：请求参数错误</p>
+<pre><code class="has-line-data" data-line-start="459" data-line-end="463" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求参数错误"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="463" data-line-end="464">409 Conflict：邮箱已被注册</p>
+<pre><code class="has-line-data" data-line-start="465" data-line-end="469" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"该邮箱已被注册"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="469" data-line-end="470">500 Internal Server Error：更新用户信息失败</p>
+<pre><code class="has-line-data" data-line-start="471" data-line-end="475" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"更新用户信息失败"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=475 data-line-end=476 ><a id="324__Token__475"></a>3.2.4 获取用户 Token 信息</h5>
+<h6 class="code-line" data-line-start=476 data-line-end=477 ><a id="URLapitokeninfo_476"></a>URL：/api/token-info</h6>
+<h6 class="code-line" data-line-start=477 data-line-end=478 ><a id="GET_477"></a>方法：GET</h6>
+<h6 class="code-line" data-line-start=478 data-line-end=479 ><a id="_478"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="480" data-line-end="485">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=486 data-line-end=487 ><a id="200_OK_486"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="488" data-line-end="494" class="language-json">{
+  "<span class="hljs-attribute">tokenCount</span>": <span class="hljs-value"><span class="hljs-number">8</span></span>,
+  "<span class="hljs-attribute">username</span>": <span class="hljs-value"><span class="hljs-string">"test_user"</span></span>,
+  "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e490819790a4819c8589948881ca878b89">[email&#160;protected]</a>"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=494 data-line-end=495 ><a id="_494"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="496" data-line-end="497">401 Unauthorized：未认证</p>
+<pre><code class="has-line-data" data-line-start="498" data-line-end="502" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"未认证的用户"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="502" data-line-end="503">404 Not Found：用户不存在（如用户已被删除）</p>
+<pre><code class="has-line-data" data-line-start="504" data-line-end="508" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"用户不存在"</span>
+</span>}
+</code></pre>
+<h4 class="code-line" data-line-start=508 data-line-end=509 ><a id="33__508"></a>3.3 模型相关接口（需认证）</h4>
+<h5 class="code-line" data-line-start=509 data-line-end=510 ><a id="331__AI__509"></a>3.3.1 获取可用 AI 模型列表</h5>
+<h6 class="code-line" data-line-start=510 data-line-end=511 ><a id="URLapimodels_510"></a>URL：/api/models</h6>
+<h6 class="code-line" data-line-start=511 data-line-end=512 ><a id="GET_511"></a>方法：GET</h6>
+<h6 class="code-line" data-line-start=512 data-line-end=513 ><a id="_512"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="514" data-line-end="519">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=520 data-line-end=521 ><a id="200_OK_520"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="522" data-line-end="531" class="language-json">{
+  "<span class="hljs-attribute">models</span>": <span class="hljs-value">[
+    <span class="hljs-string">"qwen:7b"</span>,
+    <span class="hljs-string">"deepseek-r1:8b"</span>,
+    <span class="hljs-string">"deepseek-r1:14b"</span>
+  ]</span>,
+  "<span class="hljs-attribute">count</span>": <span class="hljs-value"><span class="hljs-number">3</span>
+</span>}
+</code></pre>
+<h4 class="code-line" data-line-start=531 data-line-end=532 ><a id="34__531"></a>3.4 对话相关接口（需认证）</h4>
+<h5 class="code-line" data-line-start=532 data-line-end=533 ><a id="341__532"></a>3.4.1 创建新对话</h5>
+<h6 class="code-line" data-line-start=533 data-line-end=534 ><a id="URLapiconversations_533"></a>URL：/api/conversations</h6>
+<h6 class="code-line" data-line-start=534 data-line-end=535 ><a id="POST_534"></a>方法：POST</h6>
+<h6 class="code-line" data-line-start=535 data-line-end=536 ><a id="_535"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="537" data-line-end="542">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=543 data-line-end=544 ><a id="_543"></a>请求体：</h6>
+<pre><code class="has-line-data" data-line-start="545" data-line-end="549" class="language-json">{
+  "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"新对话标题"</span> // 对话标题（可选，默认为<span class="hljs-string">"新对话"</span>）
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=549 data-line-end=550 ><a id="201_Created_549"></a>成功响应（201 Created）：</h6>
+<pre><code class="has-line-data" data-line-start="551" data-line-end="559" class="language-json">{
+  "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+  "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"新对话"</span></span>,
+  "<span class="hljs-attribute">messageCount</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+  "<span class="hljs-attribute">tokenUsed</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+  "<span class="hljs-attribute">createdAt</span>": <span class="hljs-value"><span class="hljs-string">"2024-05-20T14:30:00Z"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=559 data-line-end=560 ><a id="_559"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="561" data-line-end="562">400 Bad Request：请求参数错误</p>
+<pre><code class="has-line-data" data-line-start="563" data-line-end="567" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求参数错误"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="567" data-line-end="568">500 Internal Server Error：创建对话失败</p>
+<pre><code class="has-line-data" data-line-start="569" data-line-end="573" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"创建对话失败"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=573 data-line-end=574 ><a id="342__573"></a>3.4.2 获取对话列表（分页）</h5>
+<h6 class="code-line" data-line-start=574 data-line-end=575 ><a id="URLapiconversations_574"></a>URL：/api/conversations</h6>
+<h6 class="code-line" data-line-start=575 data-line-end=576 ><a id="GET_575"></a>方法：GET</h6>
+<h6 class="code-line" data-line-start=576 data-line-end=577 ><a id="_576"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="578" data-line-end="583">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=584 data-line-end=585 ><a id="_584"></a>查询参数：</h6>
+<h6 class="code-line" data-line-start=585 data-line-end=586 ><a id="page_1_585"></a>page：页码（默认 1，正整数）</h6>
+<h6 class="code-line" data-line-start=586 data-line-end=587 ><a id="pageSize_10_100_586"></a>pageSize：每页条数（默认 10，最大 100）</h6>
+<h6 class="code-line" data-line-start=587 data-line-end=588 ><a id="200_OK_587"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="589" data-line-end="605" class="language-json">{
+  "conversations": [
+    {
+      "id": 1,
+      "title": "新对话",
+      "messageCount": 2,
+      "tokenUsed": 5,
+      "createdAt": "2024-05-20T14:30:00Z"
+    }
+  ],
+  "total": 1,          // 总对话数
+  "page": 1,           // 当前页码
+  "pageSize": 10,      // 每页条数
+  "totalPages": 1      // 总页数
+}
+</code></pre>
+<h6 class="code-line" data-line-start=605 data-line-end=606 ><a id="_605"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="607" data-line-end="608">401 Unauthorized：未认证</p>
+<pre><code class="has-line-data" data-line-start="609" data-line-end="613" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"未认证的用户"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=613 data-line-end=614 ><a id="342__613"></a>3.4.2 获取对话详情（含消息列表）</h5>
+<h6 class="code-line" data-line-start=614 data-line-end=615 ><a id="URLapiconversationsidid__ID_614"></a>URL：/api/conversations/{id}（{id} 为对话 ID）</h6>
+<h6 class="code-line" data-line-start=615 data-line-end=616 ><a id="GET_615"></a>方法：GET</h6>
+<h6 class="code-line" data-line-start=616 data-line-end=617 ><a id="_616"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="618" data-line-end="623">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=624 data-line-end=625 ><a id="200_OK_624"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="626" data-line-end="650" class="language-json">{
+  "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+  "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"新对话"</span></span>,
+  "<span class="hljs-attribute">messageCount</span>": <span class="hljs-value"><span class="hljs-number">2</span></span>,
+  "<span class="hljs-attribute">tokenUsed</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
+  "<span class="hljs-attribute">createdAt</span>": <span class="hljs-value"><span class="hljs-string">"2024-05-20T14:30:00Z"</span></span>,
+  "<span class="hljs-attribute">messages</span>": <span class="hljs-value">[
+    {
+      "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+      "<span class="hljs-attribute">role</span>": <span class="hljs-value"><span class="hljs-string">"user"</span></span>,
+      "<span class="hljs-attribute">content</span>": <span class="hljs-value"><span class="hljs-string">"你好"</span></span>,
+      "<span class="hljs-attribute">tokenCount</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+      "<span class="hljs-attribute">createdAt</span>": <span class="hljs-value"><span class="hljs-string">"2024-05-20T14:30:00Z"</span>
+    </span>},
+    {
+      "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">2</span></span>,
+      "<span class="hljs-attribute">role</span>": <span class="hljs-value"><span class="hljs-string">"assistant"</span></span>,
+      "<span class="hljs-attribute">content</span>": <span class="hljs-value"><span class="hljs-string">"你好！我是小玉，有什么可以帮你的吗？"</span></span>,
+      "<span class="hljs-attribute">tokenCount</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
+      "<span class="hljs-attribute">createdAt</span>": <span class="hljs-value"><span class="hljs-string">"2024-05-20T14:30:05Z"</span>
+    </span>}
+  ]
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=650 data-line-end=651 ><a id="_650"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="652" data-line-end="653">400 Bad Request：缺少对话 ID</p>
+<pre><code class="has-line-data" data-line-start="654" data-line-end="658" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"缺少对话ID"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="658" data-line-end="659">404 Not Found：对话不存在（或不属于当前用户）</p>
+<pre><code class="has-line-data" data-line-start="660" data-line-end="664" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"对话记录不存在"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=664 data-line-end=665 ><a id="344__664"></a>3.4.4 删除对话</h5>
+<h6 class="code-line" data-line-start=665 data-line-end=666 ><a id="URLapiconversationsidid__ID_665"></a>URL：/api/conversations/{id}（{id} 为对话 ID）</h6>
+<h6 class="code-line" data-line-start=666 data-line-end=667 ><a id="DELETE_666"></a>方法：DELETE</h6>
+<h6 class="code-line" data-line-start=667 data-line-end=668 ><a id="_667"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="669" data-line-end="674">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=675 data-line-end=676 ><a id="200_OK_675"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="677" data-line-end="681" class="language-json">{
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"删除成功"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=681 data-line-end=682 ><a id="_681"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="683" data-line-end="684">404 Not Found：对话不存在</p>
+<pre><code class="has-line-data" data-line-start="685" data-line-end="689" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"对话记录不存在"</span>
+</span>}
+</code></pre>
+<p class="has-line-data" data-line-start="689" data-line-end="690">500 Internal Server Error：事务提交失败</p>
+<pre><code class="has-line-data" data-line-start="691" data-line-end="695" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"事务提交失败: deadlock found when trying to get lock; try restarting transaction"</span>
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=695 data-line-end=696 ><a id="345__695"></a>3.4.5 更新对话标题</h5>
+<h6 class="code-line" data-line-start=696 data-line-end=697 ><a id="URLapiconversationsidtitleid__ID_696"></a>URL：/api/conversations/{id}/title（{id} 为对话 ID）</h6>
+<h6 class="code-line" data-line-start=697 data-line-end=698 ><a id="PUT_697"></a>方法：PUT</h6>
+<h6 class="code-line" data-line-start=698 data-line-end=699 ><a id="_698"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="700" data-line-end="705">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=706 data-line-end=707 ><a id="_706"></a>请求体：</h6>
+<pre><code class="has-line-data" data-line-start="708" data-line-end="712" class="language-json">{
+  "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"AI助手使用指南"</span> // 新标题（必填）
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=712 data-line-end=713 ><a id="200_OK_712"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="714" data-line-end="719" class="language-json">{
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"更新成功"</span></span>,
+  "<span class="hljs-attribute">title</span>": <span class="hljs-value"><span class="hljs-string">"AI助手使用指南"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=719 data-line-end=720 ><a id="_719"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="721" data-line-end="722">400 Bad Request：标题为空</p>
+<pre><code class="has-line-data" data-line-start="723" data-line-end="727" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求参数错误: Key: 'req.Title' Error:Field validation for 'Title' failed on the 'required' tag"</span>
+</span>}
+</code></pre>
+<h4 class="code-line" data-line-start=727 data-line-end=728 ><a id="35_Token__727"></a>3.5 Token 相关接口（需认证）</h4>
+<h5 class="code-line" data-line-start=728 data-line-end=729 ><a id="351_Token__728"></a>3.5.1 Token 充值</h5>
+<h6 class="code-line" data-line-start=729 data-line-end=730 ><a id="URLapirecharge_729"></a>URL：/api/recharge</h6>
+<h6 class="code-line" data-line-start=730 data-line-end=731 ><a id="POST_730"></a>方法：POST</h6>
+<h6 class="code-line" data-line-start=731 data-line-end=732 ><a id="_731"></a>请求头：</h6>
+<p class="has-line-data" data-line-start="733" data-line-end="738">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;<br>
+Content-Type: application/json</p>
+<h6 class="code-line" data-line-start=739 data-line-end=740 ><a id="_739"></a>请求体：</h6>
+<pre><code class="has-line-data" data-line-start="741" data-line-end="745" class="language-json">{
+  "<span class="hljs-attribute">tokenAmount</span>": <span class="hljs-value"><span class="hljs-number">100</span> // 充值数量（必填，最少<span class="hljs-number">1</span>）
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=745 data-line-end=746 ><a id="200_OK_745"></a>成功响应（200 OK）：</h6>
+<pre><code class="has-line-data" data-line-start="747" data-line-end="753" class="language-json">{
+  "message": "充值成功",
+  "tokenCount": 108, // 充值后的总Token数
+  "added": 100       // 本次充值数量
+}
+</code></pre>
+<h6 class="code-line" data-line-start=753 data-line-end=754 ><a id="_753"></a>失败响应：</h6>
+<p class="has-line-data" data-line-start="755" data-line-end="756">400 Bad Request：充值数量无效</p>
+<pre><code class="has-line-data" data-line-start="757" data-line-end="761" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求参数错误: Key: 'RechargeRequest.TokenAmount' Error:Field validation for 'TokenAmount' failed on the 'min' tag"</span>
+</span>}
+</code></pre>
+<h3 class="code-line" data-line-start=761 data-line-end=762 ><a id="4_WebSocket__761"></a>4. WebSocket 实时通信接口</h3>
+<h4 class="code-line" data-line-start=762 data-line-end=763 ><a id="41__762"></a>4.1 连接信息</h4>
+<h6 class="code-line" data-line-start=763 data-line-end=764 ><a id="wslocalhost8080wsai_763"></a>连接地址：ws://localhost:8080/ws/ai</h6>
+<h6 class="code-line" data-line-start=764 data-line-end=765 ><a id="_764"></a>认证要求：连接时需携带以下请求头</h6>
+<p class="has-line-data" data-line-start="766" data-line-end="770">Authorization: Bearer &lt;your_jwt_token&gt;<br>
+X-Timestamp: &lt;current_unix_timestamp&gt;<br>
+X-Nonce: &lt;random_string&gt;<br>
+X-Signature: &lt;hmac_sha256_signature&gt;</p>
+<h4 class="code-line" data-line-start=771 data-line-end=772 ><a id="42__771"></a>4.2 消息格式</h4>
+<h5 class="code-line" data-line-start=772 data-line-end=773 ><a id="421__772"></a>4.2.1 认证响应（连接建立后立即返回）</h5>
+<h6 class="code-line" data-line-start=773 data-line-end=774 ><a id="_773"></a>成功：</h6>
+<pre><code class="has-line-data" data-line-start="775" data-line-end="780" class="language-json">{
+  "<span class="hljs-attribute">success</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"认证成功，可以开始聊天"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=780 data-line-end=781 ><a id="_780"></a>失败：</h6>
+<pre><code class="has-line-data" data-line-start="782" data-line-end="787" class="language-json">{
+  "<span class="hljs-attribute">success</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"无效或过期的Token"</span> // 具体错误信息（如Token无效、时间戳过期等）
+</span>}
+</code></pre>
+<h5 class="code-line" data-line-start=787 data-line-end=788 ><a id="422__787"></a>4.2.2 客户端请求格式（发送给服务器）</h5>
+<pre><code class="has-line-data" data-line-start="789" data-line-end="797" class="language-json">{
+  "prompt": "请解释什么是AI？",  // 提问内容（必填，除非仅加载对话）
+  "model": "deepseek-r1:8b",     // AI模型（可选，默认使用deepseek-r1:8b）
+  "useContext": true,            // 是否使用对话上下文（可选，默认true）
+  "clearContext": false,         // 是否清空当前上下文（可选，默认false）
+  "conversationId": 1            // 对话ID（可选，用于加载历史对话）
+}
+</code></pre>
+<h5 class="code-line" data-line-start=797 data-line-end=798 ><a id="423__797"></a>4.2.3 服务器响应格式</h5>
+<h6 class="code-line" data-line-start=798 data-line-end=799 ><a id="_AI__798"></a>中间响应（流式返回 AI 回答片段）：</h6>
+<pre><code class="has-line-data" data-line-start="800" data-line-end="805" class="language-json">{
+  "text": "AI（人工智能）是指", // 回答片段
+  "done": false                 // 标记是否完成（false=未完成，true=完成）
+}
+</code></pre>
+<h6 class="code-line" data-line-start=805 data-line-end=806 ><a id="_805"></a>完成响应（回答结束时返回）：</h6>
+<pre><code class="has-line-data" data-line-start="807" data-line-end="812" class="language-json">{
+  "text": "",  // 完成时text为空
+  "done": true
+}
+</code></pre>
+<h6 class="code-line" data-line-start=812 data-line-end=813 ><a id="_812"></a>错误响应（发生错误时返回）：</h6>
+<pre><code class="has-line-data" data-line-start="814" data-line-end="819" class="language-json">{
+  "error": "token数量不足，请充值", // 具体错误信息
+  "done": true
+}
+</code></pre>
+<h3 class="code-line" data-line-start=819 data-line-end=820 ><a id="5__819"></a>5. 错误处理规范</h3>
+<h6 class="code-line" data-line-start=820 data-line-end=821 ><a id="_HTTP__error__820"></a>系统使用标准 HTTP 状态码区分错误类型，响应体统一包含 error 字段描述具体原因：</h6>
+<h6 class="code-line" data-line-start=821 data-line-end=822 ><a id="_____821"></a>状态码  含义  常见场景</h6>
+<h6 class="code-line" data-line-start=822 data-line-end=823 ><a id="400__Bad_Request__822"></a>400  Bad Request（请求参数错误） 邮箱格式无效、密码长度不足、必填参数缺失等</h6>
+<h6 class="code-line" data-line-start=823 data-line-end=824 ><a id="401__Unauthorized____TokenToken____823"></a>401  Unauthorized（未认证）   无 Token、Token 无效 / 过期、时间戳过期、签名验证失败等</h6>
+<h6 class="code-line" data-line-start=824 data-line-end=825 ><a id="404__Not_Found_____824"></a>404  Not Found（资源不存在）    用户不存在、对话不存在等</h6>
+<h6 class="code-line" data-line-start=825 data-line-end=826 ><a id="409__Conflict___825"></a>409  Conflict（资源冲突）  邮箱已注册</h6>
+<h6 class="code-line" data-line-start=826 data-line-end=827 ><a id="429__Too_Many_Requests____5__826"></a>429  Too Many Requests（限流）   每秒请求数超过 5 次（系统限流策略）</h6>
+<h6 class="code-line" data-line-start=827 data-line-end=828 ><a id="500___Token__827"></a>500  服务器内部错误 数据库事务失败、Token 生成失败等</h6>
+<h6 class="code-line" data-line-start=829 data-line-end=830 ><a id="_829"></a>常见错误响应示例：</h6>
+<h6 class="code-line" data-line-start=830 data-line-end=831 ><a id="401_Unauthorized_830"></a>401 Unauthorized（签名验证失败）：</h6>
+<pre><code class="has-line-data" data-line-start="832" data-line-end="836" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"签名验证失败"</span>
+</span>}
+</code></pre>
+<h6 class="code-line" data-line-start=836 data-line-end=837 ><a id="429_Too_Many_Requests_836"></a>429 Too Many Requests（请求过于频繁）：</h6>
+<pre><code class="has-line-data" data-line-start="838" data-line-end="842" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求过于频繁"</span>
+</span>}
+</code></pre>
+<h3 class="code-line" data-line-start=842 data-line-end=843 ><a id="6__842"></a>6. 系统限流策略</h3>
+<h6 class="code-line" data-line-start=843 data-line-end=844 ><a id="_843"></a>为保障服务稳定性，系统全局采用请求限流策略：</h6>
+<h6 class="code-line" data-line-start=844 data-line-end=845 ><a id="_5__844"></a>限流规则：每秒最多允许 5 个请求（所有接口共享此限制）</h6>
+<h6 class="code-line" data-line-start=845 data-line-end=846 ><a id="429_Too_Many_Requests_845"></a>限流响应（429 Too Many Requests）：</h6>
+<pre><code class="has-line-data" data-line-start="847" data-line-end="851" class="language-json">{
+  "<span class="hljs-attribute">error</span>": <span class="hljs-value"><span class="hljs-string">"请求过于频繁"</span>
+</span>}
+</code></pre>
+<h3 class="code-line" data-line-start=851 data-line-end=852 ><a id="7__851"></a>7. 部署与启动</h3>
+<h4 class="code-line" data-line-start=852 data-line-end=853 ><a id="71__852"></a>7.1 环境要求</h4>
+<h6 class="code-line" data-line-start=853 data-line-end=854 ><a id="Go_118_853"></a>Go 1.18+</h6>
+<h6 class="code-line" data-line-start=854 data-line-end=855 ><a id="MySql_80_854"></a>MySql 8.0+</h6>
+<h6 class="code-line" data-line-start=855 data-line-end=856 ><a id="Ollama_http101502824111434_API_responseclientgo__855"></a>Ollama 服务（默认地址：<a href="http://10.150.28.241:11434">http://10.150.28.241:11434</a>，可在 API_response/client.go 中修改）</h6>
+<h4 class="code-line" data-line-start=856 data-line-end=857 ><a id="72__856"></a>7.2 启动步骤</h4>
+<h6 class="code-line" data-line-start=857 data-line-end=858 ><a id="_857"></a>克隆代码到本地：</h6>
+<pre><code class="has-line-data" data-line-start="859" data-line-end="862" class="language-bash">git <span class="hljs-built_in">clone</span> &lt;repository_url&gt;
+<span class="hljs-built_in">cd</span> MyGo
+</code></pre>
+<h6 class="code-line" data-line-start=862 data-line-end=863 ><a id="_Go__862"></a>初始化 Go 模块：</h6>
+<pre><code class="has-line-data" data-line-start="864" data-line-end="866" class="language-bash">go mod tidy
+</code></pre>
+<h6 class="code-line" data-line-start=866 data-line-end=867 ><a id="_rootYyz123456tcp1270013306User_System_866"></a>配置数据库（可选，默认使用 root:Yyz123456@tcp(127.0.0.1:3306)/User_System）：</h6>
+<pre><code class="has-line-data" data-line-start="868" data-line-end="873" class="language-bash"><span class="hljs-comment"># 方式1：通过环境变量设置</span>
+<span class="hljs-built_in">export</span> DB_DSN=<span class="hljs-string">"root:your_password@tcp(127.0.0.1:3306)/your_db_name?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"</span>
+
+<span class="hljs-comment"># 方式2：直接修改database/setup.go中的默认DSN</span>
+</code></pre>
+<h6 class="code-line" data-line-start=873 data-line-end=874 ><a id="_873"></a>启动服务：</h6>
+<pre><code class="has-line-data" data-line-start="875" data-line-end="877" class="language-bash">go run main.go
+</code></pre>
+<h5 class="code-line" data-line-start=877 data-line-end=878 ><a id="_877"></a>验证服务：</h5>
+<h6 class="code-line" data-line-start=878 data-line-end=879 ><a id="HTTP_httplocalhost8080_878"></a>HTTP 服务地址：<a href="http://localhost:8080">http://localhost:8080</a></h6>
+<h6 class="code-line" data-line-start=879 data-line-end=880 ><a id="WebSocket_wslocalhost8080wsai_879"></a>WebSocket 地址：ws://localhost:8080/ws/ai</h6>
+<h3 class="code-line" data-line-start=880 data-line-end=881 ><a id="8__880"></a>8. 注意事项</h3>
+<h6 class="code-line" data-line-start=881 data-line-end=882 ><a id="JWT__controllersauthgo__jwtSecret_your_very_secret_jwt_key_881"></a>JWT 密钥安全：生产环境中需替换 controllers/auth.go 中的 jwtSecret（当前为 your_very_secret_jwt_key），建议使用环境变量或配置文件存储。</h6>
+<h6 class="code-line" data-line-start=882 data-line-end=883 ><a id="_XTimestamp__Unix__10__882"></a>时间戳精度：客户端生成的 X-Timestamp 需为秒级 Unix 时间戳，且确保客户端与服务器时间同步（偏差不超过 10 秒）。</h6>
+<h6 class="code-line" data-line-start=883 data-line-end=884 ><a id="Token_AI__Token_Token__apirecharge__883"></a>Token 消耗规则：AI 回答会消耗 Token（按回答片段数量计数），用户 Token 不足时无法发起新请求，需通过 /api/recharge 接口充值。</h6>
+<h6 class="code-line" data-line-start=884 data-line-end=885 ><a id="___884"></a>数据安全：删除用户 / 对话时会硬删除关联数据（含消息记录），操作前需确认数据重要性</h6>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body></html>
