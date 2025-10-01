@@ -14,7 +14,7 @@ class HTTPClient:
     def __init__(self, base_url="http://localhost:8080", secret_key="your_shared_secret_key"):
         self.base_url = base_url
         # 硬编码的token（请替换为实际的JWT token）
-        self.token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3RfdXNlciIsImV4cCI6MTc1OTI4MTgxMSwiaWF0IjoxNzU5MTk1NDExfQ.210XrDiZcc1kqzbhX0V5XIQGQKjKC4pnlVpHTXKeusg"
+        self.token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3RfdXNlciIsImV4cCI6MTc1OTM5MzYwOCwiaWF0IjoxNzU5MzA3MjA4fQ.K8aLw999JPr6FL6HBhkhHpMLPpPqHwaGXgu-0kYis-U"
         self.secret_key = secret_key
 
         self.session = requests.Session()
@@ -24,20 +24,46 @@ class HTTPClient:
         # 使用secrets模块生成32位随机字符串，确保加密安全性
         return secrets.token_hex(16)  # 生成32位十六进制随机字符串
 
+    def get_auth_headers(self, method, path, body=None):
+        """生成登录和注册接口所需的请求头（包含时间戳、nonce和签名）"""
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        # 添加时间戳和nonce
+        timestamp = str(int(time.time()))
+        nonce = self._generate_nonce()
+
+        headers["X-Timestamp"] = timestamp
+        headers["X-Nonce"] = nonce
+
+        # 构建签名字符串
+        sign_string = self._build_sign_string(method, path, timestamp, nonce, None, body)
+
+        # 创建HMAC签名
+        signature = hmac.new(
+            self.secret_key.encode('utf-8'),
+            sign_string.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+
+        headers["X-Signature"] = signature
+        return headers
+
     def _build_sign_string(self, method, path, timestamp, nonce, query_params=None, body=None):
         """构建签名字符串，与服务端保持一致"""
         # 1. 添加HTTP方法
         sign_parts = [method.upper()]
-        
+
         # 2. 添加路径
         sign_parts.append(path)
-        
+
         # 3. 添加时间戳
         sign_parts.append(str(timestamp))
-        
+
         # 4. 添加nonce
         sign_parts.append(nonce)
-        
+
         # 5. 添加查询参数（按键排序）
         if query_params:
             query_parts = []
@@ -51,11 +77,11 @@ class HTTPClient:
                     query_parts.append(f"{key}={value}")
             if query_parts:
                 sign_parts.append("&".join(query_parts))
-        
+
         # 6. 添加请求体（如果有）
         if body:
             sign_parts.append(body)
-            
+
         # 使用&连接所有部分
         return "&".join(sign_parts)
 
@@ -98,7 +124,7 @@ class HTTPClient:
         body = json.dumps(payload, separators=(',', ':'))
 
         try:
-            response = self.session.post(url, data=body, headers=self._get_headers("POST", "/api/auth/login", None, body))
+            response = self.session.post(url, data=body, headers=self.get_auth_headers("POST", "/api/auth/login", body))
             if response.status_code == 200:
                 data = response.json()
                 self.token = data.get("token")
@@ -110,6 +136,30 @@ class HTTPClient:
                 return False
         except Exception as e:
             print(f"登录请求失败: {e}")
+            return False
+
+    def register(self, username, email, password):
+        """用户注册"""
+        url = f"{self.base_url}/api/auth/register"
+        payload = {
+            "username": username,
+            "email": email,
+            "password": password
+        }
+        body = json.dumps(payload, separators=(',', ':'))
+
+        try:
+            response = self.session.post(url, data=body,
+                                         headers=self.get_auth_headers("POST", "/api/auth/register", body))
+            if response.status_code == 201:
+                data = response.json()
+                print(f"注册成功！用户: {data.get('username')}")
+                return True
+            else:
+                print(f"注册失败: {response.json().get('error', '未知错误')}")
+                return False
+        except Exception as e:
+            print(f"注册请求失败: {e}")
             return False
 
     def recharge(self, token_amount):
@@ -157,6 +207,7 @@ class HTTPClient:
         except Exception as e:
             print(f"获取token信息失败: {e}")
             return False
+
     def delete_user(self):
         """删除用户及其所有数据"""
         if not self.token:
@@ -180,6 +231,7 @@ class HTTPClient:
         except Exception as e:
             print(f"删除用户数据请求失败: {e}")
             return False
+
     def get_user_profile(self):
         """获取用户信息"""
 
@@ -235,7 +287,8 @@ class HTTPClient:
         }
 
         try:
-            response = self.session.get(url, headers=self._get_headers("GET", "/api/conversations", params), params=params)
+            response = self.session.get(url, headers=self._get_headers("GET", "/api/conversations", params),
+                                        params=params)
             if response.status_code == 200:
                 data = response.json()
                 conversations = data.get("conversations", [])
@@ -414,6 +467,8 @@ def main():
             break
         else:
             print("无效选择，请重新输入")
+
+
 def test():
     """主函数"""
     # 使用硬编码的token创建客户端
@@ -421,6 +476,7 @@ def test():
     while True:
         client.get_user_profile()
         time.sleep(0.8)
+
 
 if __name__ == "__main__":
     print("注意: 运行此脚本前请确保已安装requests库")
