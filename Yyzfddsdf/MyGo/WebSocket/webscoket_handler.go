@@ -19,6 +19,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
+	"github.com/pkoukk/tiktoken-go"
 	"yyz.com/MyGo/API_response"
 	"yyz.com/MyGo/controllers"
 	"yyz.com/MyGo/database"
@@ -37,6 +38,7 @@ var upgrader = websocket.Upgrader{
 
 // Redis客户端
 var redisClient *redis.Client
+
 // Redis连接状态
 var redisConnected = false
 
@@ -46,7 +48,7 @@ func init() {
 		Addr: "localhost:6379", // Redis服务器地址
 		DB:   0,                // 使用默认数据库
 	})
-	
+
 	// 测试Redis连接
 	ctx := context.Background()
 	_, err := redisClient.Ping(ctx).Result()
@@ -65,6 +67,21 @@ type AIRequest struct {
 	UseContext     bool   `json:"useContext,omitempty"`     // 是否使用上下文
 	ClearContext   bool   `json:"clearContext,omitempty"`   // 是否清除上下文
 	ConversationID uint   `json:"conversationId,omitempty"` // 可选的对话ID
+}
+
+// 使用tiktoken-go库计算文本的token数量
+func calculateTokenCount(text string) int {
+	// 初始化tiktoken编码器，使用gpt-3.5-turbo模型的编码方式
+	// 这里使用cl100k_base编码，适用于大多数OpenAI模型
+	encoding, err := tiktoken.GetEncoding("cl100k_base")
+	if err != nil {
+		log.Printf("初始化tiktoken编码器失败: %v，使用字符数作为替代", err)
+		return len(text)
+	}
+
+	// 编码文本并返回token数量
+	tokens := encoding.Encode(text, nil, nil)
+	return len(tokens)
 }
 
 // 响应结构体
@@ -264,7 +281,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Printf("客户端已连接，用户ID: %d", claims.UserID)
 
 	// 创建Ollama客户端（默认使用deepseek-r1:8b模型）
-	ollamaClient := API_response.NewOllamaClient("http://10.150.28.241:11434", "deepseek-r1:8b")
+	ollamaClient := API_response.NewOllamaClient("http://192.168.0.1:11434", "deepseek-r1:8b")
 
 	// 为每个连接维护一个对话历史，包含系统消息
 	chatHistory := []API_response.Message{
@@ -395,7 +412,7 @@ func processMessage(conn *websocket.Conn, req *AIRequest, claims *controllers.Cl
 
 	// 如果指定了模型，则使用指定的模型
 	if req.Model != "" {
-		ollamaClient = API_response.NewOllamaClient("http://10.150.28.241:11434", req.Model)
+		ollamaClient = API_response.NewOllamaClient("http://192.168.0.18:11434", req.Model)
 	}
 
 	// 如果请求清除上下文
@@ -441,12 +458,22 @@ func processMessage(conn *websocket.Conn, req *AIRequest, claims *controllers.Cl
 		Content: req.Prompt,
 	}
 
+	// 计算上下文中的token数量（包括系统提示词和所有历史消息）
+	contextTokenCount := 0
+	for _, msg := range *chatHistory {
+		contextTokenCount += calculateTokenCount(msg.Content)
+	}
+
+	// 加上当前用户输入的token数量
+	inputTokenCount := calculateTokenCount(req.Prompt)
+	totalInputTokenCount := contextTokenCount + inputTokenCount
+
 	// 创建用户消息记录
 	userMsg := models.Message{
 		ConversationID: conversation.ID, // 使用当前对话ID
 		Role:           "user",
 		Content:        req.Prompt,
-		TokenCount:     0, // 用户消息不计算token
+		TokenCount:     inputTokenCount, // 记录用户输入的token数量（基于tiktoken-go库计算）
 	}
 	database.DB.Create(&userMsg)
 
@@ -476,21 +503,21 @@ func processMessage(conn *websocket.Conn, req *AIRequest, claims *controllers.Cl
 		return true
 	})
 
-	if chunkCount > 0 {
-		log.Printf("本次回答使用 %d 个token", chunkCount)
-	}
+	// 计算总token消耗（上下文+当前输入+输出）
+	totalTokenCount := totalInputTokenCount + chunkCount
+	log.Printf("本次请求消耗 %d 个token (上下文: %d, 输入: %d, 输出: %d) [基于tiktoken-go库计算]", totalTokenCount, contextTokenCount, inputTokenCount, chunkCount)
 
 	// 创建助手消息记录
 	assistantMsg := models.Message{
 		ConversationID: conversation.ID, // 使用当前对话ID
 		Role:           "assistant",
 		Content:        fullResponse,
-		TokenCount:     chunkCount,
+		TokenCount:     chunkCount, // 输出token按chunk数量计算
 	}
 	database.DB.Create(&assistantMsg)
 
-	if chunkCount > 0 {
-		newTokenCount := user.TokenCount - chunkCount
+	if totalTokenCount > 0 {
+		newTokenCount := user.TokenCount - totalTokenCount
 		if newTokenCount < 0 {
 			newTokenCount = 0
 		}
@@ -502,12 +529,13 @@ func processMessage(conn *websocket.Conn, req *AIRequest, claims *controllers.Cl
 			Update("token_count", newTokenCount).Error; err != nil {
 			log.Printf("更新token数量失败: %v", err)
 		} else {
-			log.Printf("用户 %d 使用 %d 个token，剩余 %d 个", claims.UserID, chunkCount, newTokenCount)
+			log.Printf("用户 %d 使用 %d 个token，剩余 %d 个 [上下文: %d (tiktoken), 输入: %d (tiktoken), 输出: %d (chunk)]",
+				claims.UserID, totalTokenCount, newTokenCount, contextTokenCount, inputTokenCount, chunkCount)
 		}
 
 		// 更新对话记录的统计信息
 		conversation.MessageCount += 2 // 用户消息+助手消息
-		conversation.TokenUsed += chunkCount
+		conversation.TokenUsed += totalTokenCount
 		database.DB.Model(conversation).Updates(map[string]interface{}{
 			"message_count": conversation.MessageCount,
 			"token_used":    conversation.TokenUsed,
