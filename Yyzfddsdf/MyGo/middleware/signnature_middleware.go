@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sort"
@@ -43,7 +44,7 @@ func SignatureMiddleware() gin.HandlerFunc {
 		}
 
 		// 重新设置请求体，确保后续处理可以正常读取
-		c.Request.Body = nil
+		c.Request.Body = ioutil.NopCloser(strings.NewReader(string(body)))
 
 		// 构建签名字符串
 		signString := buildSignString(method, path, timestamp, nonce, queryParams, body)
@@ -65,8 +66,8 @@ func SignatureMiddleware() gin.HandlerFunc {
 
 // buildSignString 构建签名字符串
 func buildSignString(method, path, timestamp, nonce string, queryParams url.Values, body []byte) string {
-	// 1. 添加HTTP方法
-	signParts := []string{method}
+	// 1. 添加HTTP方法（转换为大写以保持与客户端一致）
+	signParts := []string{strings.ToUpper(method)}
 
 	// 2. 添加路径
 	signParts = append(signParts, path)
