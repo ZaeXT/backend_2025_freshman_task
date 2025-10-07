@@ -12,8 +12,7 @@ import (
 // Connect opens a PostgreSQL connection using DATABASE_URL.
 func Connect(databaseURL string) (*gorm.DB, error) {
 	if databaseURL == "" {
-		// Provide a friendly default to help first run; it will still fail if DB not available.
-		databaseURL = "postgres://postgres:postgres@localhost:5432/aibackend?sslmode=disable"
+		return nil, fmt.Errorf("DATABASE_URL is required")
 	}
 	dsn := databaseURL
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

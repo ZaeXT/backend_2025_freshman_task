@@ -80,7 +80,12 @@ func (s *ChatService) SendMessage(ctx context.Context, userID uint, convID uint,
 	}
 	// Load recent messages for context
 	var msgs []models.Message
-	s.DB.Where("conversation_id = ?", conv.ID).Order("id desc").Limit(s.MaxTurns * 2).Find(&msgs)
+	if err := s.DB.Where("conversation_id = ?", conv.ID).
+		Order("id desc").
+		Limit(s.MaxTurns * 2).
+		Find(&msgs).Error; err != nil {
+		return conv.ID, "", err
+	}
 	// reverse to chronological
 	for i, j := 0, len(msgs)-1; i < j; i, j = i+1, j-1 {
 		msgs[i], msgs[j] = msgs[j], msgs[i]
@@ -116,6 +121,9 @@ func (s *ChatService) SendMessage(ctx context.Context, userID uint, convID uint,
 	// Save assistant message
 	am := &models.Message{ConversationID: conv.ID, Role: "assistant", Content: assistantContent.String()}
 	if err := s.DB.Create(am).Error; err != nil {
+		return conv.ID, "", err
+	}
+	if err := s.DB.Model(conv).UpdateColumn("updated_at", time.Now()).Error; err != nil {
 		return conv.ID, "", err
 	}
 	return conv.ID, am.Content, nil

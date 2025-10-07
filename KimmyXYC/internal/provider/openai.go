@@ -43,9 +43,9 @@ func NewOpenAIProviderFromEnv() *OpenAIProvider {
 }
 
 type openAIChatRequest struct {
-	Model    string               `json:"model"`
-	Messages []openAIChatMessage  `json:"messages"`
-	Stream   bool                 `json:"stream"`
+	Model    string              `json:"model"`
+	Messages []openAIChatMessage `json:"messages"`
+	Stream   bool                `json:"stream"`
 }
 
 type openAIChatMessage struct {
@@ -54,18 +54,18 @@ type openAIChatMessage struct {
 }
 
 type openAIStreamChunk struct {
-	ID      string                   `json:"id"`
-	Object  string                   `json:"object"`
-	Created int64                    `json:"created"`
-	Model   string                   `json:"model"`
+	ID      string                    `json:"id"`
+	Object  string                    `json:"object"`
+	Created int64                     `json:"created"`
+	Model   string                    `json:"model"`
 	Choices []openAIStreamChunkChoice `json:"choices"`
 }
 
 type openAIStreamChunkChoice struct {
-	Index int                      `json:"index"`
-	Delta openAIStreamDelta        `json:"delta"`
+	Index int               `json:"index"`
+	Delta openAIStreamDelta `json:"delta"`
 	// finish_reason may be "stop" etc.
-	FinishReason *string           `json:"finish_reason"`
+	FinishReason *string `json:"finish_reason"`
 }
 
 type openAIStreamDelta struct {
@@ -125,7 +125,10 @@ func (p *OpenAIProvider) ChatCompletionStream(ctx context.Context, model string,
 		for {
 			select {
 			case <-ctx.Done():
-				ch <- StreamChunk{Err: ctx.Err()}
+				select {
+				case ch <- StreamChunk{Err: ctx.Err()}:
+				default:
+				}
 				return
 			default:
 			}

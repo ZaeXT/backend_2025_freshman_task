@@ -68,7 +68,12 @@ export function initChatUI() {
         li.dataset.id = c.id;
         li.className = (c.id === currentConv) ? 'active' : '';
         const title = c.title || `对话 #${c.id}`;
-        li.innerHTML = `<div>${title}</div><small>${c.model || ''}</small>`;
+        const titleDiv = document.createElement('div');
+        titleDiv.textContent = title;
+        const modelSmall = document.createElement('small');
+        modelSmall.textContent = c.model || '';
+        li.appendChild(titleDiv);
+        li.appendChild(modelSmall);
         li.addEventListener('click', async () => {
           currentConv = c.id;
           document.querySelectorAll('#conv-list li').forEach(x => x.classList.remove('active'));

@@ -8,13 +8,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var defaultSecret = []byte("dev-secret-change-me")
-
-func jwtSecret() []byte {
-	if s := os.Getenv("JWT_SECRET"); s != "" {
-		return []byte(s)
+func jwtSecret() ([]byte, error) {
+	s := os.Getenv("JWT_SECRET")
+	if s == "" {
+		return nil, errors.New("JWT_SECRET is not configured")
 	}
-	return defaultSecret
+	return []byte(s), nil
 }
 
 // Claims represents JWT claims for a user session.
@@ -36,14 +35,22 @@ func CreateToken(userID uint, email, role string, ttl time.Duration) (string, er
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
+	key, err := jwtSecret()
+	if err != nil {
+		return "", err
+	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return t.SignedString(jwtSecret())
+	return t.SignedString(key)
 }
 
 // ParseToken parses and validates a JWT, returning claims if valid.
 func ParseToken(token string) (*Claims, error) {
+	key, err := jwtSecret()
+	if err != nil {
+		return nil, err
+	}
 	tok, err := jwt.ParseWithClaims(token, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return jwtSecret(), nil
+		return key, nil
 	})
 	if err != nil {
 		return nil, err
