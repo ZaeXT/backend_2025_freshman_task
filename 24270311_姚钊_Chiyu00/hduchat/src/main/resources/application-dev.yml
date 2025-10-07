@@ -1,0 +1,26 @@
+server:
+  port: 8100
+
+spring:
+  # 数据库配置
+  datasource:
+    username: root
+    password: yaozhao
+    url: jdbc:mysql://127.0.0.1:3306/xiaozhu?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    druid:
+      keep-alive: true
+
+  # Redis配置
+  data:
+    redis:
+      port: 6379
+      host: 127.0.0.1
+      database: 1
+      jedis:
+        pool:
+          max-wait: 2000
+          time-between-eviction-runs: 1000
+
+
