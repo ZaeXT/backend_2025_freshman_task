@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI对话 - AI问答系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="chat-container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>AI问答系统</h3>
+            <div class="user-info">
+                <span>{{.username}}</span>
+                <div class="user-level level-{{.level}}">{{.level}}</div>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="/chat" class="menu-item active">💬 对话</a>
+            <a href="/profile" class="menu-item">👤 个人资料</a>
+            <button id="logoutBtn" class="menu-item logout">🚪 退出</button>
+        </div>
+
+        <div class="conversation-list">
+            <h4>对话列表</h4>
+            <div id="conversations">
+                <!-- 对话列表将通过JavaScript动态加载 -->
+            </div>
+            <button id="newConversationBtn" class="btn btn-secondary btn-small">+ 新建对话</button>
+        </div>
+    </div>
+
+    <!-- 主聊天区域 -->
+    <div class="chat-main">
+        <div class="chat-header">
+            <div class="chat-info">
+                <h3 id="conversationTitle">{{.conversation.title}}</h3>
+                <div class="model-selector">
+                    <select id="modelSelect">
+                        <option value="basic">基础模型</option>
+                        <option value="advanced">高级模型</option>
+                        <option value="premium">旗舰模型</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- 消息将通过JavaScript动态加载 -->
+        </div>
+
+        <div class="chat-input">
+            <form id="messageForm">
+                <div class="input-group">
+                    <input type="text" id="messageInput" placeholder="输入你的消息..." required>
+                    <button type="submit" class="btn btn-primary">发送</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/chat.js"></script>
+</body>
+</html>
