@@ -45,10 +45,9 @@ func NewConfig() *Config {
 	provider := "mock"
 	if apiKey != "free-api-key" && strings.HasPrefix(apiKey, "sk-") {
 		provider = "deepseek"
-		fmt.Println("✅ API Key格式正确，启用DeepSeek API")
+
 	} else if apiKey != "free-api-key" {
-		fmt.Printf("❌ API Key格式不正确，当前: %s...\n", safeSubstring(apiKey, 10))
-		fmt.Println("⚠️  将使用模拟响应模式")
+
 		apiKey = "free-api-key" // 强制使用模拟模式
 	}
 

@@ -48,8 +48,6 @@ type APIResponse struct {
 
 func NewWebServer() *WebServer {
 	cfg := config.NewConfig()
-	fmt.Printf("🌐 Web服务器配置 - Provider: %s, API Key: %s...\n",
-		cfg.Provider, safeSubstring(cfg.APIKey, 10))
 
 	aiClient := NewAIClient(cfg)
 
