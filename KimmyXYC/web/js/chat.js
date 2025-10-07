@@ -101,6 +101,7 @@ export function initChatUI() {
 
   newChatBtn.addEventListener('click', () => {
     currentConv = 0; // backend will create on first send
+    document.querySelectorAll('#conv-list li').forEach(x => x.classList.remove('active'));
     clearMessages();
     chatInput.focus();
   });
