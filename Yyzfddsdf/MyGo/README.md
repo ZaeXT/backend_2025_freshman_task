@@ -19,74 +19,17 @@ Authorization: Bearer <your_jwt_token>
 ###### Token 有效期：24 小时（从生成时间起算）
 ###### Token 包含信息：用户 ID、邮箱、用户名（用于权限校验）
 #### 2.2 时间戳验证（防重放攻击）
-为防止请求被恶意重放，所有需认证的接口必须额外携带 X-Timestamp  X-Nonce  X-Signature 请求头，值为当前 Unix 时间戳（秒级）。
+为防止请求被恶意重放，所有需认证的接口必须额外携带 X-Timestamp 和 X-Nonce 请求头，值为当前 Unix 时间戳（秒级）。
 服务器会验证时间戳有效性，仅接受与服务器当前时间偏差在 10 秒内的请求。
 每个nonce在10分钟内只允许使用一次，重复使用会被拒绝请求。
-X-Signature由请求头、请求方法、路由、URL参数、请求体共同拼接为字符串，再由密钥签名，在服务端校验，以防止数据篡改。(拼接顺序：HTTP方法 & 路由 & 时间戳 & nonce & 查询参数 & 请求体)
 
-###### X-Signature 签名生成规则：
-###### 1. 构建签名字符串，格式为：HTTP方法&请求路径&时间戳&nonce&查询参数&请求体
-###### 2. 使用 HMAC-SHA256 算法和共享密钥对签名字符串进行签名
-###### 3. 将签名结果转换为十六进制字符串
-
-###### 签名字符串构建示例：
-###### GET请求（带查询参数）：
-```
-GET&/api/conversations&1716215400&5d8e1b7b8e4b4a9d9c7e1f8a7b8c9d0e&page=1&pageSize=10
-```
-###### POST请求（带请求体）：
-```
-POST&/api/recharge&1716215400&5d8e1b7b8e4b4a9d9c7e1f8a7b8c9d0e&{"tokenAmount":100}
-```
-###### WebSocket连接请求：
-```
-GET&/ws/ai&1716215400&5d8e1b7b8e4b4a9d9c7e1f8a7b8c9d0e
-```
-
-##### 2.2.1 Python 时间戳生成示例
+##### 2.2.1 Python 请求示例
 ```
 Python
 import time
 import requests
 import json
 import secrets
-import hashlib
-import hmac
-
-def _build_sign_string(method, path, timestamp, nonce, query_params=None, body=None):
-    """构建签名字符串，与服务端保持一致"""
-    # 1. 添加HTTP方法
-    sign_parts = [method.upper()]
-        
-    # 2. 添加路由
-    sign_parts.append(path)
-        
-    # 3. 添加时间戳
-    sign_parts.append(str(timestamp))
-        
-    # 4. 添加nonce
-    sign_parts.append(nonce)
-        
-    # 5. 添加查询参数（按键排序）
-    if query_params:
-        query_parts = []
-        for key in sorted(query_params.keys()):
-            value = query_params[key]
-            # 处理不同类型的参数值
-            if isinstance(value, list):
-                for v in sorted(value):
-                    query_parts.append(f"{key}={v}")
-            else:
-                query_parts.append(f"{key}={value}")
-        if query_parts:
-            sign_parts.append("&".join(query_parts))
-        
-    # 6. 添加请求体（如果有）
-    if body:
-        sign_parts.append(body)
-            
-    # 使用&连接所有部分
-    return "&".join(sign_parts)
 
 def _generate_nonce():
     """生成加密安全的随机nonce"""
@@ -98,7 +41,6 @@ method = "PUT"
 path = "/api/conversations/123/title"  # 注意这里必须包含 /title
 timestamp = str(int(time.time()))
 nonce = _generate_nonce()
-query_params = None  # 没有查询参数
 
 # 2. 准备请求体
 request_body = {
@@ -106,27 +48,15 @@ request_body = {
 }
 body_json = json.dumps(request_body, separators=(',', ':'))
 
-# 3. 构建签名字符串
-sign_string = _build_sign_string(method, path, timestamp, nonce, query_params, body_json)
-print(f"签名字符串: {sign_string}")
-
-# 4. 生成签名
-signature = hmac.new(
-    secret_key.encode('utf-8'),
-    sign_string.encode('utf-8'),
-    hashlib.sha256
-).hexdigest()
-
-# 5. 构造请求头
+# 3. 构造请求头
 headers = {
     "Authorization": "Bearer your_jwt_token_here",
     "X-Timestamp": timestamp,
     "X-Nonce": nonce,
-    "X-Signature": signature,
     "Content-Type": "application/json"
 }
 
-# 6. 发送请求
+# 4. 发送请求
 try:
     response = requests.put(
         url="http://localhost:8080" + path,
@@ -152,31 +82,15 @@ query_params = {
     "pageSize": 5
 }
 
-# GET请求没有请求体 
-body_json = None
-
-# 3. 构建签名字符串 
-sign_string = _build_sign_string(method, path, timestamp, nonce, query_params, body_json) 
-print(f"签名字符串: {sign_string}") 
-
-# 4. 生成签名 
-secret_key = "your_shared_secret_key" 
-signature = hmac.new( 
-    secret_key.encode('utf-8'), 
-    sign_string.encode('utf-8'), 
-    hashlib.sha256 
-).hexdigest() 
-
-# 5. 构造请求头（包含认证信息） 
+# 3. 构造请求头
 headers = { 
     "Authorization": "Bearer your_jwt_token_here",  # 替换为实际的JWT token
     "X-Timestamp": timestamp, 
     "X-Nonce": nonce, 
-    "X-Signature": signature, 
     "Content-Type": "application/json" 
 } 
 
-# 6. 发送请求 
+# 4. 发送请求 
 try: 
     response = requests.get( 
         url="http://localhost:8080" + path, 
@@ -188,40 +102,29 @@ try:
 except Exception as e: 
     print(f"GET请求发生错误: {e}")
 
-# 示例3: WebSocket连接请求（包含签名）
-def _get_headers(self):
-    """获取包含认证、时间戳、nonce和签名的请求头"""
-    headers = {
-        "Content-Type": "application/json"
-    }
-    if self.token:
-        headers["Authorization"] = f"Bearer {self.token}"
-        timestamp = str(int(time.time()))
-        nonce = self._generate_nonce()
-            
-        headers["X-Timestamp"] = timestamp
-        headers["X-Nonce"] = nonce
-            
-        # 计算签名
-        sign_string = self._build_sign_string("GET", "/ws/ai", timestamp, nonce)
-        # 创建HMAC签名
-        signature = hmac.new(
-            self.secret_key.encode('utf-8'),
-            sign_string.encode('utf-8'),
-            hashlib.sha256
-        ).hexdigest()
-        headers["X-Signature"] = signature
-                
-    return headers
+# 示例3: WebSocket连接请求
 
-def connect(self):
+def connect_websocket(self):
     """连接到WebSocket服务器"""
-    headers = self._get_headers()
-
+    # 构建包含认证参数的URL
+    timestamp = str(int(time.time()))
+    nonce = self._generate_nonce()
+    
+    # 构建包含参数的URL
+    params = {
+        "Authorization": f"Bearer {self.token}",
+        "X-Timestamp": timestamp,
+        "X-Nonce": nonce
+    }
+    
+    # 将参数编码为URL查询字符串
+    query_string = "&" + "&".join([f"{key}={urlparse.quote(str(value))}" for key, value in params.items()])
+    url_with_params = self.ws_url + query_string
+    
     # 创建WebSocket连接
     self.ws = websocket.WebSocketApp(
-        self.ws_url,
-        header=headers,
+        url_with_params,
+        header={},  # 使用空请求头
         on_message=self.on_message,
         on_error=self.on_error,
         on_close=self.on_close
@@ -230,7 +133,7 @@ def connect(self):
 
     # 运行WebSocket客户端
     try:
-        print(f"正在连接到 {self.ws_url}...")
+        print(f"正在连接到 {url_with_params}...")
         self.ws.run_forever()
     except KeyboardInterrupt:
         print("\n程序被用户中断")
@@ -313,7 +216,6 @@ def connect(self):
 ```
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 请求体：
@@ -359,7 +261,6 @@ json
 ```
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 请求体：
@@ -411,7 +312,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 成功响应（200 OK）：
@@ -443,7 +343,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 请求体：
@@ -493,7 +392,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 成功响应（200 OK）：
@@ -527,7 +425,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 成功响应（200 OK）：
@@ -550,7 +447,6 @@ Content-Type: application/json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 请求体：
@@ -593,7 +489,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 查询参数：
@@ -634,7 +529,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 成功响应（200 OK）：
@@ -686,7 +580,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 成功响应（200 OK）：
@@ -718,7 +611,6 @@ json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 请求体：
@@ -751,7 +643,6 @@ Content-Type: application/json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 Content-Type: application/json
 ```
 ###### 请求体：
@@ -784,7 +675,6 @@ Content-Type: application/json
 Authorization: Bearer <your_jwt_token>
 X-Timestamp: <current_unix_timestamp>
 X-Nonce: <random_string>
-X-Signature: <hmac_sha256_signature>
 ```
 #### 4.2 消息格式
 ##### 4.2.1 认证响应（连接建立后立即返回）
@@ -805,13 +695,25 @@ X-Signature: <hmac_sha256_signature>
 ##### 4.2.2 客户端请求格式（发送给服务器）
 ```json
 {
-  "prompt": "请解释什么是AI？",  // 提问内容（必填，除非仅加载对话）
+  "prompt": "请解释什么是AI？",  // 提问内容（发送消息时必填）
   "model": "deepseek-r1:8b",     // AI模型（可选，默认使用deepseek-r1:8b）
-  "useContext": true,            // 是否使用对话上下文（可选，默认true）
   "clearContext": false,         // 是否清空当前上下文（可选，默认false）
-  "conversationId": 1            // 对话ID（可选，用于加载历史对话）
+  "conversationId": 1,           // 对话ID（可选，用于加载历史对话）
+  "createNewConversation": true  // 是否创建新对话（可选，默认false）
 }
 ```
+
+###### 字段说明：
+- **prompt**：用户提问内容。发送消息时必填，创建新对话或加载对话时可省略
+- **model**：指定使用的AI模型。可选，不指定时使用默认模型
+- **clearContext**：是否清空当前对话上下文。设置为true时，会清空当前对话的所有上下文，可单独发送，也可与prompt组合使用实现"清空上下文并提问"功能
+- **conversationId**：指定对话ID。用于加载特定对话的历史记录，需要组合promote使用
+- **createNewConversation**：是否创建新对话。设置为true时，系统会创建新的对话会话，可单独发送
+
+###### 使用场景：
+1. **发送消息**：必须包含prompt字段，其他字段可选
+2. **创建新对话**：设置createNewConversation为true，可省略prompt字段
+3. **加载历史对话**：设置conversationId为指定ID，可省略prompt字段
 ##### 4.2.3 服务器响应格式
 ###### 中间响应（流式返回 AI 回答片段）：
 ```json
@@ -827,6 +729,13 @@ X-Signature: <hmac_sha256_signature>
   "done": true
 }
 ```
+###### 创建新对话成功响应：
+```json
+{
+  "text": "已创建新对话", // 创建成功消息
+  "done": true
+}
+```
 ###### 错误响应（发生错误时返回）：
 ```json
 {
@@ -834,21 +743,39 @@ X-Signature: <hmac_sha256_signature>
   "done": true
 }
 ```
+
+##### 4.2.4 创建新对话功能
+###### 功能说明：允许用户创建新的对话会话
+###### 请求格式：
+```json
+{
+  "createNewConversation": true
+}
+```
+
+###### 成功响应：
+```json
+{
+  "text": "已创建新对话",
+  "done": true
+}
+```
 ### 5. 错误处理规范
 ###### 系统使用标准 HTTP 状态码区分错误类型，响应体统一包含 error 字段描述具体原因：
 ###### 状态码	含义	常见场景
 ###### 400	Bad Request（请求参数错误）	邮箱格式无效、密码长度不足、必填参数缺失等
-###### 401	Unauthorized（未认证）	无 Token、Token 无效 / 过期、时间戳过期、签名验证失败等
+###### 401	Unauthorized（未认证）	无 Token、Token 无效 / 过期、时间戳过期等
 ###### 404	Not Found（资源不存在）	用户不存在、对话不存在等
 ###### 409	Conflict（资源冲突）	邮箱已注册
 ###### 429	Too Many Requests（限流）	每秒请求数超过 5 次（系统限流策略）
 ###### 500	服务器内部错误	数据库事务失败、Token 生成失败等
 
 ###### 常见错误响应示例：
-###### 401 Unauthorized（签名验证失败）：
+###### 401 Unauthorized（时间戳验证失败）：
 ```json
 {
-  "error": "签名验证失败"
+  "success": false,
+  "error": "时间戳验证失败"
 }
 ```
 ###### 429 Too Many Requests（请求过于频繁）：
@@ -881,13 +808,7 @@ cd MyGo
 ```bash
 go mod tidy
 ```
-###### 配置数据库（可选，默认使用 root:Yyz123456@tcp(127.0.0.1:3306)/User_System）：
-```bash
-# 方式1：通过环境变量设置
-export DB_DSN="root:your_password@tcp(127.0.0.1:3306)/your_db_name?charset=utf8mb4&parseTime=True&loc=Local"
 
-# 方式2：直接修改database/setup.go中的默认DSN
-```
 ###### 启动服务：
 ```bash
 go run main.go
