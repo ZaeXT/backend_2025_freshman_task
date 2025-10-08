@@ -38,6 +38,7 @@ chatbot-project/
 ### 1. 下载依赖
 
 ```bash
+    go mod tidy
    ```
 
 ## 🎯 模块功能说明
