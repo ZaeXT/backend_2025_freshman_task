@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+// 默认Ollama服务器URL
+const DefaultOllamaServerURL = "http://10.150.123.93:11434"
+
 // OllamaClient 是一个封装了Ollama API调用的客户端结构体
 type OllamaClient struct {
 	ServerURL string
