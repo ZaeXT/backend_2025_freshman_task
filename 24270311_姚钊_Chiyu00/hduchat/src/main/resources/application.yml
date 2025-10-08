@@ -1,0 +1,65 @@
+server:
+  tomcat:
+    uri-encoding: utf-8
+
+spring:
+  # 应用名称
+  application:
+    name: hduchat
+  # 默认执行的配置文件
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+
+  # Cache设置
+  cache:
+    type: redis
+
+  # 文件上传相关设置
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  mvc:
+    async:
+      request-timeout: 3600000
+
+# MybatisPlus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    jdbc-type-for-null: null
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+sa-token:
+  is-print: false
+  token-name: Authorization
+
+logging:
+  level:
+    dev:
+      langchain4j: DEBUG
+      ai4j:
+        openai4j: DEBUG
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    #自定义swagger前端请求路径,输入http:localhost:8080/swagger-ui会自动重定向到swagger页面
+    path: /swagger-ui # 设置Swagger UI前端页面的访问路径（默认路径为 /swagger-ui.html）
+    tags-sorter: alpha # 配置API标签（tags）的排序方式：alpha表示按字母顺序（A-Z）排序
+    operations-sorter: alpha # 配置同一标签下API操作（如GET/POST请求）的排序方式：alpha表示按字母顺序排序
+  api-docs:
+    path: /v3/api-docs  #swagger后端请求地址
+    enabled: true   #是否开启文档功能
+  group-configs: #分组配置,可配置多个分组
+    - group: 'default'             #分组名称
+      paths-to-match: '/**'        #配置需要匹配的路径
+      packages-to-scan:
+        com.chiyu.hduchat.aigc.controller,
+        com.chiyu.hduchat.server.controller,
+        com.chiyu.hduchat.upms.controller
+hduchat:
+  auth:
+    salt-key: hduchat-salt
