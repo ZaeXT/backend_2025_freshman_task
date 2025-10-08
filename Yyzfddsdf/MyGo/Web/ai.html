@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AI聊天助手</title>
+    <!-- 引入 CryptoJS 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- 引入 Marked.js 用于 Markdown 解析 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入 Prism.js 用于代码高亮 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <!-- 引入优化后的CSS文件 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI聊天助手</h1>
+            <div class="connection-status status-disconnected" id="status">未连接</div>
+        </div>
+        
+        <div class="main-content">
+            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+            <div class="sidebar" id="sidebar">
+                <!-- 用户信息和充值功能 -->
+                <div class="user-section">
+                    <h3>用户信息</h3>
+                    <div class="user-info">
+                        <div class="info-item">
+                            <span class="info-label">用户名:</span>
+                            <span class="info-value" id="username">未登录</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">邮箱:</span>
+                            <span class="info-value" id="useremail">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Token余额:</span>
+                            <span class="info-value" id="tokenBalance">0</span>
+                        </div>
+                    </div>
+                    <div class="logout-section">
+                        <button class="btn-primary" onclick="gotoChatroom()" style="width: 100%; margin-bottom: 10px;">进入聊天室</button>
+                        <button class="btn-danger" onclick="logout()" style="width: 100%;">退出登录</button>
+                    </div>
+                    <div class="recharge-section">
+                        <h4>充值选项</h4>
+                        <div class="recharge-options">
+                            <button class="recharge-btn" onclick="recharge(10000)">充值 10000 Token</button>
+                            <button class="recharge-btn" onclick="recharge(50000)">充值 50000 Token</button>
+                            <button class="recharge-btn" onclick="recharge(100000)">充值 100000 Token</button>
+                        </div>
+                        <div class="custom-recharge">
+                            <input type="number" id="customAmount" placeholder="自定义金额" min="1" max="10000000">
+                            <button class="recharge-btn" onclick="customRecharge()">自定义充值</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>连接配置</h3>
+                    <div class="form-group" style="display: none;">
+                        <label for="wsUrl">WebSocket URL:</label>
+                        <input type="text" id="wsUrl" value="wss://www.yyzyyz.click/ws/ai" placeholder="WebSocket服务器地址" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="model">AI模型:</label>
+                        <select id="model">
+                            <option value="qwen:7b">Qwen 7B</option>
+                            <option value="deepseek-r1:8b">DeepSeek R1 8B</option>
+                            <option value="deepseek-r1:14b">DeepSeek R1 14B</option>
+                            <option value="DeepSeek-V3.2">DeepSeek V3.2</option>
+                        </select>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="btn-primary" onclick="connect()" id="connectBtn">连接</button>
+                        <button class="btn-secondary" onclick="disconnect()" id="disconnectBtn" disabled>断开</button>
+                        <button class="btn-danger" onclick="clearContext()" id="clearBtn" disabled>清空上下文</button>
+                    </div>
+                </div>
+                
+                <!-- 会话管理功能 -->
+                <div class="conversation-section">
+                    <h3>历史会话</h3>
+                    <div class="conversation-controls">
+                    <button class="btn-primary" onclick="loadConversations()" id="loadConversationsBtn">加载会话列表</button>
+                    <button class="btn-secondary" onclick="refreshConversations()" id="refreshConversationsBtn">刷新</button>
+                    <button class="btn-success" onclick="createNewConversation()" id="createConversationBtn">创建新对话</button>
+                </div>
+                    <div class="conversation-list" id="conversationList">
+                        <div class="conversation-empty">点击"加载会话列表"查看历史会话</div>
+                    </div>
+                    <div class="conversation-pagination" id="conversationPagination">
+                        <button class="btn-pagination" onclick="prevPage()" id="prevPageBtn" disabled>上一页</button>
+                        <span class="page-info" id="pageInfo">第 1 页</span>
+                        <button class="btn-pagination" onclick="nextPage()" id="nextPageBtn" disabled>下一页</button>
+                    </div>
+                </div>
+                
+                <div class="log-section">
+                    <h3>连接日志</h3>
+                    <div class="log-content" id="log"></div>
+                    <button class="btn-secondary" onclick="clearLog()" style="margin-top: 10px; padding: 8px 12px;">清空日志</button>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="messages" id="messages">
+                    <div class="message assistant">
+                        <div class="message-bubble">你好！我是AI助手，请先点击"连接"按钮建立连接，然后就可以开始聊天了。</div>
+                        <div class="message-time" id="currentTime"></div>
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <div class="input-container">
+                        <textarea id="messageInput" placeholder="输入您的问题..." disabled></textarea>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="sendMessage()" id="sendBtn" disabled>发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript 代码保持不变（使用你之前的完整JS代码）
+        let ws = null;
+        let isConnected = false;
+        let currentAssistantMessage = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus(status, message) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `connection-status status-${status}`;
+        }
+
+        function updateButtons() {
+            document.getElementById('connectBtn').disabled = isConnected;
+            document.getElementById('disconnectBtn').disabled = !isConnected;
+            document.getElementById('clearBtn').disabled = !isConnected;
+            document.getElementById('sendBtn').disabled = !isConnected;
+            document.getElementById('messageInput').disabled = !isConnected;
+        }
+
+        function generateNonce() {
+            const array = new Uint8Array(16);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
+        function buildSignString(method, path, timestamp, nonce, queryParams = null, body = '') {
+            // 1. 添加HTTP方法（转换为大写以保持与后端一致）
+            const signParts = [method.toUpperCase()];
+            
+            // 2. 添加路径
+            signParts.push(path);
+            
+            // 3. 添加时间戳
+            signParts.push(timestamp);
+            
+            // 4. 添加nonce
+            signParts.push(nonce);
+            
+            // 5. 添加查询参数（如果有）
+            if (queryParams && queryParams.toString()) {
+                // 将查询参数按key排序并构建字符串
+                const params = new URLSearchParams(queryParams);
+                const sortedParams = Array.from(params.entries())
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .map(([key, value]) => `${key}=${value}`)
+                    .join('&');
+                signParts.push(sortedParams);
+            }
+            
+            // 6. 添加请求体（如果有）
+            if (body) {
+                signParts.push(body);
+            }
+            
+            // 使用&连接所有部分
+            return signParts.join('&');
+        }
+
+        // 简化认证：不再需要签名计算
+        // 保留函数以保持代码兼容性，但返回空字符串
+        async function calculateSignature(signString, secretKey) {
+            log('签名验证已禁用，跳过签名计算', 'info');
+            return '';
+        }
+
+        // 配置 Marked.js 以支持代码高亮和 LaTeX
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (Prism.languages[lang]) {
+                    return Prism.highlight(code, Prism.languages[lang], lang);
+                } else {
+                    return code;
+                }
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        // MathJax 配置已移至head标签中，确保在MathJax脚本加载前设置
+
+        // 处理消息内容，支持 Markdown 和 LaTeX
+        function processMessageContent(content) {
+            // 处理 Markdown
+            content = marked.parse(content);
+            
+            return content;
+        }
+
+
+
+        function addMessage(content, role, isStreaming = false) {
+            const messagesElement = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            
+            if (isStreaming) {
+                bubbleDiv.id = 'streaming-message';
+            }
+            
+            // 处理消息内容，支持 Markdown 和 LaTeX
+            bubbleDiv.innerHTML = processMessageContent(content);
+            messageDiv.appendChild(bubbleDiv);
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = new Date().toLocaleTimeString();
+            messageDiv.appendChild(timeDiv);
+            
+            messagesElement.appendChild(messageDiv);
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+            
+            // 高亮代码块
+            if (window.Prism) {
+                Prism.highlightAllUnder(bubbleDiv);
+            }
+            
+            return bubbleDiv;
+        }
+
+        function showTypingIndicator() {
+            const messagesElement = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.id = 'typing-indicator';
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'typing-indicator';
+            bubbleDiv.innerHTML = 'AI正在思考<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+            
+            messageDiv.appendChild(bubbleDiv);
+            messagesElement.appendChild(messageDiv);
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function connect() {
+            if (isConnected) {
+                log('已经连接到服务器', 'warning');
+                return;
+            }
+
+            const token = getCookie('jwtToken');
+            const wsUrl = document.getElementById('wsUrl').value.trim();
+
+            if (!token) {
+                log('未找到JWT Token，请重新登录', 'error');
+                window.location.href = 'login_test.html';
+                return;
+            }
+
+            if (!wsUrl) {
+                log('请输入WebSocket URL', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('connecting', '连接中...');
+                log('开始连接WebSocket服务器...');
+
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const nonce = generateNonce();
+
+                const params = new URLSearchParams({
+                    'Authorization': `Bearer ${token}`,
+                    'X-Timestamp': timestamp,
+                    'X-Nonce': nonce
+                });
+
+                const urlWithParams = `${wsUrl}?${params.toString()}`;
+                log(`完整连接URL: ${urlWithParams}`, 'info');
+
+                ws = new WebSocket(urlWithParams);
+
+                ws.onopen = function(event) {
+                    isConnected = true;
+                    updateStatus('connected', '已连接');
+                    log('WebSocket连接已建立', 'success');
+                    updateButtons();
+                    addMessage('连接成功！现在可以开始聊天了。', 'assistant');
+                    
+                    // 连接成功后获取用户信息
+                    fetchUserInfo();
+                };
+
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        log(`收到消息: ${JSON.stringify(data)}`, 'info');
+                        
+                        if (data.success !== undefined) {
+                            if (data.success) {
+                                log(`认证成功: ${data.message || ''}`, 'success');
+                                // 认证成功后处理用户信息
+                                if (data.user) {
+                                    handleUserInfo(data);
+                                }
+                            } else {
+                                log(`认证失败: ${data.error || ''}`, 'error');
+                                addMessage(`认证失败: ${data.error}`, 'assistant');
+                            }
+                            return;
+                        }
+
+                        // 处理用户信息更新
+                        if (data.user || data.rechargeResult) {
+                            handleUserInfo(data);
+                            return;
+                        }
+
+                        // 处理新对话创建响应
+                        if (data.text && data.done && !data.error) {
+                            // 检查是否是创建新对话的响应
+                            if (data.text.includes("已创建新对话")) {
+                                // 清空聊天板
+                                document.getElementById('messages').innerHTML = '';
+                                
+                                // 重置当前会话ID
+                                currentConversationId = 0;
+                                
+                                // 添加系统消息
+                                addMessage('已创建新对话，现在可以开始新的聊天。', 'assistant');
+                                
+                                // 刷新会话列表
+                                loadConversations(currentPage);
+                                
+                                log('新对话创建成功', 'success');
+                                return;
+                            }
+                        }
+
+                        // 处理AI响应
+                        if (data.text !== undefined) {
+                            hideTypingIndicator();
+                            
+                            if (!currentAssistantMessage) {
+                                currentAssistantMessage = addMessage('', 'assistant', true);
+                                // 为流式消息存储原始文本内容
+                                currentAssistantMessage._rawText = '';
+                            }
+                            
+                            // 更新流式消息的原始文本内容
+                            currentAssistantMessage._rawText += data.text;
+                            
+                            // 先处理Markdown和代码高亮，再设置innerHTML
+                            const processedContent = processMessageContent(currentAssistantMessage._rawText);
+                            
+                            // 创建临时容器进行代码高亮
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = processedContent;
+                            
+                            // 高亮代码块
+                if (window.Prism) {
+                    Prism.highlightAllUnder(tempDiv);
+                }
+                
+                // 一次性设置最终内容
+                currentAssistantMessage.innerHTML = tempDiv.innerHTML;
+                            
+                            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+                        }
+
+                        // 响应完成
+                        if (data.done) {
+                            if (data.error) {
+                                if (currentAssistantMessage) {
+                                    currentAssistantMessage.innerHTML = `错误: ${data.error}`;
+                                } else {
+                                    addMessage(`错误: ${data.error}`, 'assistant');
+                                }
+                                log(`AI响应错误: ${data.error}`, 'error');
+                            } else {
+                                log('AI响应完成', 'success');
+                                // AI回复完成后更新Token余额显示
+                                fetchUserInfo();
+                            }
+                            currentAssistantMessage = null;
+                            document.getElementById('sendBtn').disabled = false;
+                        }
+
+                    } catch (e) {
+                        log(`解析消息失败: ${e}`, 'error');
+                    }
+                };
+
+                ws.onerror = function(error) {
+                    log(`WebSocket连接错误: ${error}`, 'error');
+                    updateStatus('disconnected', '连接错误');
+                };
+
+                ws.onclose = function(event) {
+                    isConnected = false;
+                    updateStatus('disconnected', '连接已关闭');
+                    log(`连接已关闭，代码: ${event.code}, 原因: ${event.reason || '无'}`, 'info');
+                    updateButtons();
+                    addMessage('连接已断开，请重新连接。', 'assistant');
+                };
+
+            } catch (error) {
+                log(`连接过程中发生错误: ${error.message}`, 'error');
+                updateStatus('disconnected', '连接失败');
+            }
+        }
+
+        function disconnect() {
+            if (ws && isConnected) {
+                ws.close();
+                log('正在断开连接...', 'info');
+            }
+        }
+
+        function gotoChatroom() {
+            // 检查是否存在JWT token
+            const token = getCookie('jwtToken');
+            if (!token) {
+                log('未找到JWT Token，请重新登录', 'error');
+                window.location.href = 'login_test.html';
+                return;
+            }
+            
+            // 跳转到聊天室页面，不携带token参数，保持URL干净
+            window.location.href = 'chatroom.html';
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+
+            if (!isConnected || !ws) {
+                addMessage('请先连接到服务器', 'assistant');
+                return;
+            }
+
+            // 添加用户消息
+            addMessage(message, 'user');
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            // 禁用发送按钮，防止重复发送
+            document.getElementById('sendBtn').disabled = true;
+            
+            // 显示打字指示器
+            showTypingIndicator();
+            
+            // 准备请求数据 - 关键修改：使用当前会话ID
+            const requestData = {
+                prompt: message,
+                model: document.getElementById('model').value,
+                useContext: true,
+                conversationId: currentConversationId // 使用当前加载的会话ID
+            };
+
+            log(`发送请求到会话 ${currentConversationId}: ${JSON.stringify(requestData)}`, 'info');
+            
+            // 发送消息
+            ws.send(JSON.stringify(requestData));
+        }
+
+        function clearContext() {
+            if (!isConnected || !ws) {
+                addMessage('请先连接到服务器', 'assistant');
+                return;
+            }
+
+            const clearData = {
+                clearContext: true
+            };
+
+            log('发送清空上下文请求', 'info');
+            ws.send(JSON.stringify(clearData));
+            addMessage('上下文已清空', 'assistant');
+        }
+
+        // 回车发送消息
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 充值功能
+        async function recharge(amount) {
+            if (amount <= 0 || amount > 10000000) {
+                showRechargeResult('充值金额必须在1-10000000之间', false);
+                return;
+            }
+
+            const token = getCookie('jwtToken');
+            
+            if (!token) {
+                showRechargeResult('未找到JWT Token，请重新登录', false);
+                return;
+            }
+
+            try {
+                log(`开始充值 ${amount} Token`, 'info');
+                
+                // 准备认证参数
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const nonce = generateNonce();
+                const bodyJson = JSON.stringify({ tokenAmount: amount });
+                
+                // 发送HTTP POST请求
+                const response = await fetch('https://www.yyzyyz.click/api/recharge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-Timestamp': timestamp,
+                        'X-Nonce': nonce
+                    },
+                    body: bodyJson
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showRechargeResult(`充值成功！当前余额: ${result.tokenCount} Token，本次增加: ${result.added} Token`, true);
+                    // 更新余额显示
+                    document.getElementById('tokenBalance').textContent = result.tokenCount;
+                    log(`充值成功: ${result.message}`, 'success');
+                } else {
+                    showRechargeResult(`充值失败: ${result.error || '未知错误'}`, false);
+                    log(`充值失败: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`充值请求失败: ${error.message}`, 'error');
+                showRechargeResult(`充值失败: ${error.message}`, false);
+            }
+        }
+
+        async function customRecharge() {
+            const customAmountInput = document.getElementById('customAmount');
+            const amount = parseInt(customAmountInput.value);
+            
+            if (!amount || amount <= 0 || amount > 10000000) {
+                showRechargeResult('请输入有效的充值金额（1-10000000）', false);
+                customAmountInput.focus();
+                return;
+            }
+            
+            await recharge(amount);
+            customAmountInput.value = '';
+        }
+
+        function showRechargeResult(message, isSuccess) {
+            // 移除之前的结果提示
+            const existingResult = document.querySelector('.recharge-result');
+            if (existingResult) {
+                existingResult.remove();
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = isSuccess ? 'recharge-success recharge-result' : 'recharge-error recharge-result';
+            resultDiv.textContent = message;
+            
+            const rechargeSection = document.querySelector('.recharge-section');
+            rechargeSection.appendChild(resultDiv);
+            
+            // 3秒后自动移除提示
+            setTimeout(() => {
+                if (resultDiv.parentNode) {
+                    resultDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // 更新用户信息显示
+        function updateUserInfo(userData) {
+            if (userData.username) {
+                document.getElementById('username').textContent = userData.username;
+            }
+            if (userData.email) {
+                document.getElementById('useremail').textContent = userData.email;
+            }
+            if (userData.tokenCount !== undefined) {
+                document.getElementById('tokenBalance').textContent = userData.tokenCount;
+            }
+        }
+
+        // 获取用户信息
+        async function fetchUserInfo() {
+            const token = getCookie('jwtToken');
+            
+            if (!token) {
+                log('未找到JWT Token，无法获取用户信息', 'warning');
+                return;
+            }
+
+            try {
+                // 准备认证参数
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const nonce = generateNonce();
+                
+                // 发送HTTP GET请求获取用户信息
+                const response = await fetch('https://www.yyzyyz.click/api/user', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Timestamp': timestamp,
+                        'X-Nonce': nonce
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    updateUserInfo(userData);
+                    log('用户信息获取成功', 'success');
+                } else {
+                    log('获取用户信息失败', 'error');
+                }
+                
+            } catch (error) {
+                log(`获取用户信息失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 处理服务器返回的用户信息（仅用于WebSocket认证成功后的用户信息）
+        function handleUserInfo(data) {
+            if (data.user) {
+                updateUserInfo(data.user);
+                log('用户信息已更新', 'success');
+            }
+        }
+
+        // 会话管理相关变量
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let currentConversationId = 0;
+
+        // 加载会话列表
+        async function loadConversations(page = 1) {
+            const token = getCookie('jwtToken');
+            
+            if (!token) {
+                log('未找到登录信息，请重新登录', 'error');
+                return;
+            }
+
+            try {
+                log(`正在加载第${page}页的会话列表...`, 'info');
+                
+                // 准备认证参数
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const nonce = generateNonce();
+                const queryParams = new URLSearchParams({
+                    page: page.toString(),
+                    pageSize: pageSize.toString()
+                });
+                
+                // 发送HTTP GET请求获取会话列表
+                const response = await fetch(`https://www.yyzyyz.click/api/conversations?${queryParams.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Timestamp': timestamp,
+                        'X-Nonce': nonce
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayConversations(data.conversations, data.total, data.page, data.pageSize, data.totalPages);
+                    log(`成功加载 ${data.conversations.length} 个会话`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`加载会话列表失败: ${errorData.error || '未知错误'}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`加载会话列表失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 显示会话列表
+        function displayConversations(conversations, total, page, pageSize, totalPages) {
+            const conversationList = document.getElementById('conversationList');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+            
+            // 更新分页信息
+            currentPage = page;
+            window.totalPages = totalPages; // 确保totalPages是全局变量
+            
+            pageInfo.textContent = `第 ${page} 页，共 ${totalPages} 页`;
+            prevPageBtn.disabled = page <= 1;
+            nextPageBtn.disabled = page >= totalPages;
+            
+            // 清空会话列表
+            conversationList.innerHTML = '';
+            
+            if (conversations.length === 0) {
+                conversationList.innerHTML = '<div class="conversation-empty">暂无会话记录</div>';
+                return;
+            }
+            
+            // 添加会话项
+            conversations.forEach(conv => {
+                const conversationItem = document.createElement('div');
+                conversationItem.className = 'conversation-item';
+                if (conv.id === currentConversationId) {
+                    conversationItem.classList.add('active');
+                }
+                
+                conversationItem.innerHTML = `
+                    <div class="conversation-title" title="${conv.title}">${conv.title}</div>
+                    <div class="conversation-meta">
+                        <span>${conv.messageCount} 条消息</span>
+                        <span>${conv.tokenUsed} Token</span>
+                    </div>
+                    <div class="conversation-actions">
+                        <button class="btn-primary" onclick="loadConversation(${conv.id})">加载</button>
+                        <button class="btn-delete" onclick="deleteConversation(${conv.id})">删除</button>
+                    </div>
+                `;
+                
+                conversationList.appendChild(conversationItem);
+            });
+        }
+
+        // 加载特定会话
+        async function loadConversation(conversationId) {
+            if (!isConnected || !ws) {
+                log('请先连接到服务器', 'error');
+                return;
+            }
+
+            const token = getCookie('jwtToken');
+            
+            if (!token) {
+                log('未找到登录信息，请重新登录', 'error');
+                return;
+            }
+
+            try {
+                log(`正在加载会话 ${conversationId}...`, 'info');
+                
+                // 准备认证参数
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const nonce = generateNonce();
+                
+                // 发送HTTP GET请求获取会话详情
+                const response = await fetch(`https://www.yyzyyz.click/api/conversations/${conversationId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Timestamp': timestamp,
+                        'X-Nonce': nonce
+                    }
+                });
+                
+                if (response.ok) {
+                    const conversationData = await response.json();
+                    
+                    // 清空聊天板
+                    document.getElementById('messages').innerHTML = '';
+                    
+                    // 添加系统消息
+                    addMessage(`已加载会话: ${conversationData.title}，现在可以继续在此会话中聊天。`, 'assistant');
+                    
+                    // 添加历史消息
+                    if (conversationData.messages && conversationData.messages.length > 0) {
+                        conversationData.messages.forEach(msg => {
+                            addMessage(msg.content, msg.role);
+                        });
+                        log(`成功加载会话 ${conversationId}，共 ${conversationData.messages.length} 条消息`, 'success');
+                    } else {
+                        log(`会话 ${conversationId} 没有消息记录`, 'info');
+                    }
+                    
+                    // 更新当前会话ID - 这是关键，设置正确的会话ID
+                    currentConversationId = conversationId;
+                    
+                    // 刷新会话列表以显示激活状态
+                    loadConversations(currentPage);
+                    
+                    log(`已设置当前会话ID为 ${currentConversationId}，后续消息将在此会话中继续`, 'success');
+                    
+                } else {
+                    const errorData = await response.json();
+                    log(`加载会话失败: ${errorData.error || '未知错误'}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`加载会话失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 创建新对话
+        async function createNewConversation() {
+            if (!isConnected || !ws) {
+                log('请先连接到服务器', 'error');
+                addMessage('请先连接到服务器', 'assistant');
+                return;
+            }
+
+            try {
+                log('正在创建新对话...', 'info');
+                
+                // 准备创建新对话的请求数据
+                const requestData = {
+                    createNewConversation: true
+                };
+
+                log(`发送创建新对话请求: ${JSON.stringify(requestData)}`, 'info');
+                
+                // 发送创建新对话请求
+                ws.send(JSON.stringify(requestData));
+                
+            } catch (error) {
+                log(`创建新对话失败: ${error.message}`, 'error');
+                addMessage(`创建新对话失败: ${error.message}`, 'assistant');
+            }
+        }
+
+        // 删除会话
+        async function deleteConversation(conversationId) {
+            if (!confirm('确定要删除这个会话吗？此操作不可恢复。')) {
+                return;
+            }
+
+            const token = getCookie('jwtToken');
+            
+            if (!token) {
+                log('未找到登录信息，请重新登录', 'error');
+                return;
+            }
+
+            try {
+                log(`正在删除会话 ${conversationId}...`, 'info');
+                
+                // 准备认证参数
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const nonce = generateNonce();
+                
+                // 发送HTTP DELETE请求删除会话
+                const response = await fetch(`https://www.yyzyyz.click/api/conversations/${conversationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-Timestamp': timestamp,
+                        'X-Nonce': nonce
+                    }
+                });
+                
+                if (response.ok) {
+                    log('会话删除成功', 'success');
+                    
+                    // 如果删除的是当前加载的会话，清空聊天板
+                    if (conversationId === currentConversationId) {
+                        document.getElementById('messages').innerHTML = '';
+                        addMessage('当前会话已被删除', 'assistant');
+                        currentConversationId = 0;
+                    }
+                    
+                    // 刷新会话列表
+                    loadConversations(currentPage);
+                    
+                } else {
+                    const errorData = await response.json();
+                    log(`删除会话失败: ${errorData.error || '未知错误'}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`删除会话失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 刷新会话列表
+        function refreshConversations() {
+            loadConversations(currentPage);
+        }
+
+        // 上一页
+        function prevPage() {
+            if (currentPage > 1) {
+                loadConversations(currentPage - 1);
+            }
+        }
+
+        // 下一页
+        function nextPage() {
+            if (currentPage < window.totalPages) {
+                loadConversations(currentPage + 1);
+            }
+        }
+
+        // 获取URL参数
+        function getUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = {};
+            for (const [key, value] of urlParams) {
+                params[key] = value;
+            }
+            return params;
+        }
+        
+        // Cookie操作函数
+        function setCookie(name, value, hours) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + hours * 60 * 60 * 1000);
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        }
+        
+        // 退出登录功能
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                // 删除Cookie
+                deleteCookie('jwtToken');
+                
+                // 关闭WebSocket连接
+                if (ws) {
+                    ws.close();
+                }
+                
+                // 跳转到登录页面
+                window.location.href = 'login_test.html';
+            }
+        }
+
+        // 立即检查登录状态（在页面渲染前）
+        const token = getCookie('jwtToken');
+        
+        // 检查是否已登录（有Token）
+        if (!token) {
+            // 立即跳转，不显示聊天界面
+            window.location.href = 'login_test.html';
+        }
+
+        // 侧边栏切换功能
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            sidebar.classList.toggle('hidden');
+            
+            // 更新按钮文本和位置
+            if (sidebar.classList.contains('hidden')) {
+                toggleBtn.textContent = '☰';
+                toggleBtn.style.left = '10px';
+            } else {
+                toggleBtn.textContent = '✕';
+                toggleBtn.style.left = 'calc(25% + 10px)';
+            }
+        }
+
+        // 页面加载时初始化（只有已登录用户才会执行到这里）
+        document.addEventListener('DOMContentLoaded', function() {
+            updateButtons();
+            document.getElementById('currentTime').textContent = new Date().toLocaleTimeString();
+            log('页面加载完成，可以开始连接聊天', 'info');
+            log('CryptoJS 库已加载，支持 HMAC-SHA256 签名', 'success');
+            
+            // 初始化侧边栏状态
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            // 检查屏幕宽度，小屏幕默认隐藏侧边栏
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('hidden');
+                toggleBtn.textContent = '☰';
+                toggleBtn.style.left = '10px';
+            } else {
+                toggleBtn.textContent = '✕';
+                toggleBtn.style.left = 'calc(25% + 10px)';
+            }
+            
+            // 自动连接WebSocket
+            log('检测到登录信息，正在自动连接...', 'info');
+            setTimeout(() => {
+                connect();
+            }, 1000);
+            
+            // 初始化用户信息显示
+            updateUserInfo({
+                username: '未登录',
+                email: '-',
+                tokenCount: 0
+            });
+        });
+    </script>
+</body>
+</html>
