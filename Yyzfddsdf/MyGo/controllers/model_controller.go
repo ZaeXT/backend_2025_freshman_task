@@ -13,7 +13,7 @@ func GetAvailableModels(c *gin.Context) {
 		"qwen:7b",
 		"deepseek-r1:8b",
 		"deepseek-r1:14b",
-		"deespseek-v3.2"
+		“deepseek-v3.2”
 	}
 
 	c.JSON(http.StatusOK, gin.H{
