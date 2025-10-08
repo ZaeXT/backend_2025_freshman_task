@@ -88,13 +88,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 验证时间窗口（10秒）
-		now := time.Now().Unix()
-		if math.Abs(float64(now-timestamp)) > 10 {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "请求已过期"})
-			c.Abort()
-			return
-		}
+		// 验证时间窗口（30秒）
+	now := time.Now().Unix()
+	if math.Abs(float64(now-timestamp)) > 30 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "请求已过期"})
+		c.Abort()
+		return
+	}
 
 		// 新增：使用nonce防止重放攻击
 		nonceStr := c.GetHeader("X-Nonce")
