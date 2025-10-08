@@ -1,0 +1,26 @@
+{
+  "DEEPSEEKR1LOCAL": {
+    "model_full_name": "deepseek-r1:8b",
+    "API_KEY_STORE": "ollama_key",
+    "base_url": "http://localhost:11434/v1/",
+    "permission": 0
+  },
+  "QWEN3LOCAL": {
+    "model_full_name": "qwen3:14b",
+    "API_KEY_STORE": "ollama_key",
+    "base_url": "http://localhost:11434/v1/",
+    "permission": 0
+  },
+  "VOLCENGINE_DEEPSEEK671B": {
+    "model_full_name": "deepseek-r1-250528",
+    "API_KEY_STORE": "ARK_API_KEY",
+    "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    "permission": 1
+  },
+  "DOUBAOSEED": {
+    "model_full_name": "doubao-seed-1-6-250615",
+    "API_KEY_STORE": "ARK_API_KEY",
+    "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    "permission": 1
+  }
+}
