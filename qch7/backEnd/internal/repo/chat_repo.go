@@ -63,3 +63,12 @@ func (r *ChatRepository) ListMessages(ctx context.Context, convID primitive.Obje
 	}
 	return out, cur.Err()
 }
+
+func (r *ChatRepository) FindConversationByIDAndUser(ctx context.Context, convID primitive.ObjectID, userID primitive.ObjectID) (*models.Conversation, error) {
+	var conv models.Conversation
+	err := r.convCol.FindOne(ctx, bson.M{"_id": convID, "user_id": userID}).Decode(&conv)
+	if err != nil {
+		return nil, err
+	}
+	return &conv, nil
+}

@@ -14,7 +14,7 @@ const (
 	CtxUserRole = "role"
 )
 
-// AuthRequired parses Bearer token and injects uid, role into context.
+// AuthRequired 解析 Bearer Token，并将 uid 与 role 注入到 Gin 上下文。
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ah := c.GetHeader("Authorization")
@@ -34,7 +34,7 @@ func AuthRequired() gin.HandlerFunc {
 	}
 }
 
-// RequireRoles ensures the user role is one of allowed ones.
+// RequireRoles 校验当前用户角色是否属于允许集合。
 func RequireRoles(roles ...string) gin.HandlerFunc {
 	allowed := map[string]struct{}{}
 	for _, r := range roles {

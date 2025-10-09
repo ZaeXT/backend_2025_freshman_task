@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// AppConfig holds all runtime configuration values.
+// AppConfig 保存运行时所需的全部配置项。
 type AppConfig struct {
 	Port           string
 	MongoURI       string
@@ -21,7 +21,7 @@ type AppConfig struct {
 
 var cfg AppConfig
 
-// Load loads environment variables and prepares application config.
+// Load 读取环境变量并生成应用配置。
 func Load() AppConfig {
 	cfg = AppConfig{
 		Port:        getEnv("PORT", ":8080"),
@@ -42,7 +42,7 @@ func Load() AppConfig {
 	return cfg
 }
 
-// Get returns loaded configuration. Ensure Load() is called during startup.
+// Get 返回已加载的配置；请确保在应用启动阶段已经调用过 Load()。
 func Get() AppConfig { return cfg }
 
 func getEnv(key, fallback string) string {

@@ -78,6 +78,8 @@ Content-Type: application/json
 }
 ```
 
+可用模型将根据用户角色自动校验（见“权限分级与模型访问”）。
+
 #### 聊天（SSE流式）
 ```
 POST /api/v1/chat
@@ -95,7 +97,44 @@ Content-Type: application/json
 
 浏览器/前端以 EventSource 或自实现方式接收 `event: message\n data: <delta>` 片段。
 
-### 权限分级
-当前通过 `JWT` 的 `role` 字段做基础控制（`free`/`pro`/`admin`），可在中间件中扩展到模型访问控制。
+#### 查询会话（含模型）
+```
+GET /api/v1/conversations/:id
+Authorization: Bearer <JWT>
+```
+
+返回示例：
+```
+{
+  "id": "66f1d7...",
+  "title": "新对话",
+  "model": "qwen-plus",
+  "createdAt": "2025-10-09T12:34:56Z",
+  "updatedAt": "2025-10-09T12:35:10Z"
+}
+```
+
+用于校验该会话最终使用的模型（已包含服务端按角色判定的结果）。
+
+#### 设置用户角色（仅管理员）
+```
+PUT /api/v1/users/:id/role
+Authorization: Bearer <JWT(管理员)>
+Content-Type: application/json
+
+{
+  "role": "free | pro | admin"
+}
+```
+返回：`204 No Content`
+
+### 权限分级与模型访问
+系统通过 `JWT` 中的 `role` 字段进行访问控制，角色有：`free` / `pro` / `admin`。聊天接口对模型的访问限制如下：
+
+- free：仅允许 `qwen-plus`（若未指定 `model`，默认使用 `qwen-plus`）
+- pro：允许 `qwen3-max` 与 `qwen-plus`（若未指定，默认使用 `qwen3-max`）
+- admin：允许任意模型（若未指定，默认使用服务端配置的 `AI_MODEL`）
+
+当请求指定了不被该角色允许的模型时，接口将返回 `403`。创建新会话时，服务端会将最终判定的模型写入 `conversation.model`，可通过上述“查询会话”接口核对。
 
 

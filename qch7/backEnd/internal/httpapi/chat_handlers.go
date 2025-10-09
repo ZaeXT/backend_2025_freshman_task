@@ -14,15 +14,18 @@ import (
 	"backEnd/internal/repo"
 )
 
+// ChatHandlers 处理聊天相关的 HTTP 请求。
 type ChatHandlers struct {
 	chatRepo *repo.ChatRepository
 	aiClient *ai.Client
 }
 
+// NewChatHandlers 创建 ChatHandlers。
 func NewChatHandlers() *ChatHandlers {
 	return &ChatHandlers{chatRepo: repo.NewChatRepository(), aiClient: ai.NewClient()}
 }
 
+// chatReq 聊天请求体。
 type chatReq struct {
 	ConversationID string       `json:"conversationId"`
 	Title          string       `json:"title"`
@@ -39,6 +42,7 @@ func (h *ChatHandlers) Chat(c *gin.Context) {
 		return
 	}
 	uidStr := c.GetString(middleware.CtxUserID)
+	roleStr := c.GetString(middleware.CtxUserRole)
 	userID, err := primitive.ObjectIDFromHex(uidStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uid"})
@@ -48,18 +52,46 @@ func (h *ChatHandlers) Chat(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 	defer cancel()
 
-	// Ensure conversation
+	// 根据角色决策可用模型（并设置默认值）
+	// free: qwen-plus only
+	// pro: qwen3-max allowed (and qwen-plus)
+	// admin: any
+	requestedModel := req.Model
+	switch roleStr {
+	case string(models.RoleFree):
+		if requestedModel == "" {
+			requestedModel = "qwen-plus"
+		}
+		if requestedModel != "qwen-plus" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "model not allowed for role"})
+			return
+		}
+	case string(models.RolePro):
+		if requestedModel == "" {
+			requestedModel = "qwen3-max"
+		}
+		if requestedModel != "qwen3-max" && requestedModel != "qwen-plus" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "model not allowed for role"})
+			return
+		}
+	case string(models.RoleAdmin):
+		if requestedModel == "" {
+			requestedModel = h.aiClient.Model()
+		}
+		// admin: no restriction
+	default:
+		c.JSON(http.StatusForbidden, gin.H{"error": "unknown role"})
+		return
+	}
+
+	// 创建或获取会话（新建时会写入最终模型）
 	var conv *models.Conversation
 	if req.ConversationID == "" {
 		title := req.Title
 		if title == "" {
 			title = "新对话"
 		}
-		model := req.Model
-		if model == "" {
-			model = h.aiClient.Model()
-		}
-		conv, err = h.chatRepo.UpsertConversation(ctx, userID, title, model)
+		conv, err = h.chatRepo.UpsertConversation(ctx, userID, title, requestedModel)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -75,7 +107,7 @@ func (h *ChatHandlers) Chat(c *gin.Context) {
 	_ = h.chatRepo.InsertMessage(ctx, &models.ChatMessage{ConversationID: conv.ID, UserID: userID, Role: models.MessageRole(last.Role), Content: last.Content})
 
 	if !req.Stream {
-		reply, err := h.aiClient.Chat(ctx, toAIMessages(req.Messages))
+		reply, err := h.aiClient.ChatWithModel(ctx, requestedModel, toAIMessages(req.Messages))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -85,13 +117,13 @@ func (h *ChatHandlers) Chat(c *gin.Context) {
 		return
 	}
 
-	// stream via SSE
+	// SSE 流式返回
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 	c.Status(http.StatusOK)
 	var assembled string
-	err = h.aiClient.ChatStream(ctx, toAIMessages(req.Messages), func(delta string) error {
+	err = h.aiClient.ChatStreamWithModel(ctx, requestedModel, toAIMessages(req.Messages), func(delta string) error {
 		assembled += delta
 		c.SSEvent("message", delta)
 		c.Writer.Flush()
@@ -104,3 +136,27 @@ func (h *ChatHandlers) Chat(c *gin.Context) {
 }
 
 func toAIMessages(msgs []ai.Message) []ai.Message { return msgs }
+
+// GET /api/v1/conversations/:id
+func (h *ChatHandlers) GetConversation(c *gin.Context) {
+	cidStr := c.Param("id")
+	uidStr := c.GetString(middleware.CtxUserID)
+	convID, err := primitive.ObjectIDFromHex(cidStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id"})
+		return
+	}
+	userID, err := primitive.ObjectIDFromHex(uidStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uid"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
+	defer cancel()
+	conv, err := h.chatRepo.FindConversationByIDAndUser(ctx, convID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": conv.ID.Hex(), "title": conv.Title, "model": conv.Model, "createdAt": conv.CreatedAt, "updatedAt": conv.UpdatedAt})
+}

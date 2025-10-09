@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -40,4 +41,15 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 	opts := options.Count().SetLimit(1)
 	n, err := r.col.CountDocuments(ctx, bson.M{"email": email}, opts)
 	return n > 0, err
+}
+
+func (r *UserRepository) UpdateRole(ctx context.Context, userID primitive.ObjectID, role models.UserRole) error {
+	update := bson.M{
+		"$set": bson.M{
+			"role":       role,
+			"updated_at": time.Now(),
+		},
+	}
+	_, err := r.col.UpdateByID(ctx, userID, update)
+	return err
 }

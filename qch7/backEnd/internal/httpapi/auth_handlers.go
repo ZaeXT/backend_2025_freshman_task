@@ -13,14 +13,17 @@ import (
 	"backEnd/internal/repo"
 )
 
+// AuthHandlers 处理注册与登录相关的 HTTP 请求。
 type AuthHandlers struct {
 	users *repo.UserRepository
 }
 
+// NewAuthHandlers 创建 AuthHandlers。
 func NewAuthHandlers() *AuthHandlers {
 	return &AuthHandlers{users: repo.NewUserRepository()}
 }
 
+// registerReq 注册请求体。
 type registerReq struct {
 	Email    string `json:"email" binding:"required,email"`
 	Username string `json:"username" binding:"required,min=2,max=32"`
@@ -58,6 +61,7 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": u.ID, "email": u.Email, "username": u.Username})
 }
 
+// loginReq 登录请求体。
 type loginReq struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
