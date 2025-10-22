@@ -1,0 +1,40 @@
+server:
+  port: 8080        # 应用监听的端口
+  mode: "debug"     # 运行模式: debug, release, test
+
+database:
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: "YOUR_DATABASE_PASSWORD" 
+  dbname: "aichat_system"
+  max_open_conns: 100 # 最大打开连接数
+  max_idle_conns: 10  # 最大空闲连接数
+
+jwt:
+  secret: "REPLACE_WITH_A_LONG_RANDOM_STRING_IN_PRODUCTION"
+  expiration: "72h" # Token 有效期，支持单位: s, m, h
+
+volcengine:
+  api_key: "***-***-***-***-***"
+  base_url: "https://ark.cn-beijing.volces.com/api/v3"
+  
+  available_models:
+    - id: "ep-xxx-xxx"
+      name: "豆包 1.6 lite"  # 用于前端展示的名称
+      tier: "free"          
+      
+    - id: "ep-xxx-xxx"
+      name: "豆包 1.6 flash"
+      tier: "premium"      # 最低 'premium' 等级用户才可使用
+      
+    - id: "ep-xxx-xxx" 
+      name: "豆包 1.6"
+      tier: "pro"           
+
+log:
+  level: "info"     # 日志级别: debug, info, warn, error
+  format: "text"    # 日志格式: text, json
+
+recycle_bin:
+  retention_days: 30 # 回收站对话保留天数
