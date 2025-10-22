@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 )
 
 type AIAdapter interface {
-	ChatStream(req volcengine.ChatRequest, userTier, modelID string) (<-chan string, <-chan error)
+	ChatStream(req volcengine.ChatRequest, userTier, modelID string, enableThinking bool) (<-chan string, <-chan error)
 	GetAvailableModelsForTier(userTier string) []volcengine.AvailableModel
 }
 
@@ -19,7 +20,7 @@ type ChatService interface {
 	CreateConversation(userID uint, isTemporary bool, categoryID *uint) (*model.Conversation, error)
 	GetConversation(convID, userID uint) (*model.Conversation, error)
 	ListConversations(userID uint) ([]*model.Conversation, error)
-	ProcessUserMessage(convID, userID uint, userTier, message, modelID string) (<-chan string, <-chan error)
+	ProcessUserMessage(convID, userID uint, userTier, message, modelID string, enableThinking bool) (<-chan string, <-chan error)
 	ListAvailableModels(userTier string) []volcengine.AvailableModel
 	UpdateConversationTitle(convID, userID uint, title string) error
 	DeleteConversation(convID, userID uint) error
@@ -106,7 +107,7 @@ func (s *chatService) AutoClassify(convID, userID uint) error {
 	}
 	freeModels := s.aiAdapter.GetAvailableModelsForTier("free")
 	modelID := freeModels[0].ID
-	resChan, errChan := s.aiAdapter.ChatStream(req, "free", modelID)
+	resChan, errChan := s.aiAdapter.ChatStream(req, "free", modelID, false)
 
 	var fullResponse strings.Builder
 	for chunk := range resChan {
@@ -170,88 +171,101 @@ func (s *chatService) ListConversations(userID uint) ([]*model.Conversation, err
 	return s.convRepo.ListByUserID(userID)
 }
 
-func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message, modelID string) (<-chan string, <-chan error) {
-	responseChan := make(chan string)
-	errChan := make(chan error, 1)
+func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message, modelID string, enableThinking bool) (<-chan string, <-chan error) {
+	conv, err := s.convRepo.GetByID(convID, userID)
+	if err != nil {
+		errChan := make(chan error, 1)
+		errChan <- errors.New("conversation not found or permission denied")
+		close(errChan)
+		return nil, errChan
+	}
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		errChan := make(chan error, 1)
+		errChan <- err
+		close(errChan)
+		return nil, errChan
+	}
+	userMsg := &model.Message{ConversationID: convID, Role: "user", Content: message}
+	if err := s.msgRepo.Create(userMsg); err != nil {
+		errChan := make(chan error, 1)
+		errChan <- err
+		close(errChan)
+		return nil, errChan
+	}
+	history, err := s.msgRepo.GetByConversationID(convID)
+	if err != nil {
+		errChan := make(chan error, 1)
+		errChan <- err
+		close(errChan)
+		return nil, errChan
+	}
+	if modelID == "" {
+		availableModels := s.aiAdapter.GetAvailableModelsForTier(userTier)
+		if len(availableModels) == 0 {
+			errChan := make(chan error, 1)
+			errChan <- errors.New("no available models for your tier")
+			close(errChan)
+			return nil, errChan
+		}
+		modelID = availableModels[0].ID
+	}
+
+	handlerResponseChan := make(chan string)
+	handlerErrChan := make(chan error, 1)
 
 	go func() {
-		defer close(responseChan)
-		// defer close(errChan)
-
-		conv, err := s.convRepo.GetByID(convID, userID)
-		if err != nil || conv.UserID != userID {
-			errChan <- errors.New("conversation not found or permission denied")
-			close(errChan)
-			return
-		}
-
-		user, err := s.userRepo.GetByID(userID)
-		if err != nil {
-			errChan <- err
-			close(errChan)
-			return
-		}
-
-		userMsg := &model.Message{ConversationID: convID, Role: "user", Content: message}
-		if err := s.msgRepo.Create(userMsg); err != nil {
-			errChan <- err
-			close(errChan)
-			return
-		}
-
-		history, err := s.msgRepo.GetByConversationID(convID)
-		if err != nil {
-			errChan <- err
-			close(errChan)
-			return
-		}
+		defer close(handlerResponseChan)
+		defer close(handlerErrChan)
 
 		systemPrompt := fmt.Sprintf("这是关于 '%s' 的对话。请记住以下用户信息：%s", conv.Title, user.MemoryInfo)
-
-		aiReq := volcengine.ChatRequest{
-			SystemPrompt: systemPrompt,
-			Messages:     history,
-		}
-
-		if modelID == "" {
-			availableModels := s.aiAdapter.GetAvailableModelsForTier(userTier)
-			if len(availableModels) == 0 {
-				errChan <- errors.New("no available models for your tier")
-				close(errChan)
-				return
-			}
-			modelID = availableModels[0].ID
-		}
-
-		aiResponseChan, aiErrChan := s.aiAdapter.ChatStream(aiReq, userTier, modelID)
+		aiReq := volcengine.ChatRequest{SystemPrompt: systemPrompt, Messages: history}
+		adapterResponseChan, adapterErrChan := s.aiAdapter.ChatStream(aiReq, userTier, modelID, enableThinking)
 
 		var fullResponse strings.Builder
+		var streamErr error
 
 		for {
 			select {
-			case chunk, ok := <-aiResponseChan:
+			case chunk, ok := <-adapterResponseChan:
 				if !ok {
-					assistantMsg := &model.Message{ConversationID: convID, Role: "assistant", Content: fullResponse.String()}
-					if err := s.msgRepo.Create(assistantMsg); err != nil {
-						errChan <- err
-						close(errChan)
-					}
-					if !conv.IsTitleUserModified && len(history) <= 2 {
-						go s.autoGenerateTitle(conv, history)
-					}
-					return
+					adapterResponseChan = nil
+				} else {
+					handlerResponseChan <- chunk
+					fullResponse.WriteString(chunk)
 				}
-				responseChan <- chunk
-				fullResponse.WriteString(chunk)
-			case err := <-aiErrChan:
-				errChan <- err
-				close(errChan)
-				return
+			case err, ok := <-adapterErrChan:
+				if !ok {
+					adapterErrChan = nil
+				} else if err != nil {
+					handlerErrChan <- err
+					streamErr = err
+				}
+			}
+			if adapterResponseChan == nil && adapterErrChan == nil {
+				break
 			}
 		}
-	}()
+		if streamErr == nil && fullResponse.Len() > 0 {
+			assistantMsg := &model.Message{
+				ConversationID: conv.ID,
+				Role:           "assistant",
+				Content:        fullResponse.String(),
+			}
+			if err := s.msgRepo.Create(assistantMsg); err != nil {
+				log.Printf("ERROR: Failed to save assistant message for conv %d: %v", conv.ID, err)
+				handlerErrChan <- err
+			}
 
-	return responseChan, errChan
+			if !conv.IsTitleUserModified {
+				log.Printf("INFO: Triggering auto title generation for conv %d", conv.ID)
+				fullHistory := append(history, assistantMsg)
+				go s.autoGenerateTitle(conv, fullHistory)
+			}
+		}
+
+	}()
+	return handlerResponseChan, handlerErrChan
 }
 
 func (s *chatService) UpdateConversationTitle(convID, userID uint, title string) error {
@@ -290,7 +304,7 @@ func (s *chatService) autoGenerateTitle(conv *model.Conversation, history []*mod
 
 	freeModels := s.aiAdapter.GetAvailableModelsForTier("free")
 	modelID := freeModels[0].ID
-	resChan, errChan := s.aiAdapter.ChatStream(req, "free", modelID)
+	resChan, errChan := s.aiAdapter.ChatStream(req, "free", modelID, false)
 
 	select {
 	case title := <-resChan:

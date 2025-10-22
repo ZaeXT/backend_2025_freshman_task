@@ -1,8 +1,9 @@
 package request
 
 type ChatMessage struct {
-	Message string `json:"message" binding:"required,max=5000"`
-	ModelID string `json:"model_id,omitempty"`
+	Message        string `json:"message" binding:"required,max=5000"`
+	ModelID        string `json:"model_id,omitempty"`
+	EnableThinking bool   `json:"enable_thinking,omitempty"`
 }
 
 type CreateConversation struct {

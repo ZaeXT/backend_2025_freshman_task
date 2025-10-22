@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+type apiThinking struct {
+	Type string `json:"type"`
+}
+
 type apiChatMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -23,6 +27,7 @@ type apiChatRequest struct {
 	Model    string           `json:"model"`
 	Messages []apiChatMessage `json:"messages"`
 	Stream   bool             `json:"stream"`
+	Thinking *apiThinking     `json:"thinking,omitempty"`
 }
 
 type apiStreamChoiceDelta struct {
@@ -111,7 +116,7 @@ func (a *VolcengineAdapter) isValidModelForTier(modelID, userTier string) bool {
 	return false
 }
 
-func (a *VolcengineAdapter) ChatStream(req ChatRequest, userTier, modelID string) (<-chan string, <-chan error) {
+func (a *VolcengineAdapter) ChatStream(req ChatRequest, userTier, modelID string, enableThinking bool) (<-chan string, <-chan error) {
 	responseChan := make(chan string)
 	errChan := make(chan error, 1)
 
@@ -138,11 +143,18 @@ func (a *VolcengineAdapter) ChatStream(req ChatRequest, userTier, modelID string
 				Content: msg.Content,
 			})
 		}
+		var thinkingPayload *apiThinking
+		if enableThinking {
+			thinkingPayload = &apiThinking{Type: "enabled"}
+		} else {
+			thinkingPayload = &apiThinking{Type: "disabled"}
+		}
 
 		apiRequest := apiChatRequest{
 			Model:    modelID,
 			Messages: apiMessages,
 			Stream:   true,
+			Thinking: thinkingPayload,
 		}
 		requestBody, err := json.Marshal(apiRequest)
 		if err != nil {

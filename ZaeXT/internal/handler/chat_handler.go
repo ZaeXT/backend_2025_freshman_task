@@ -132,7 +132,7 @@ func (h *ChatHandler) ProcessMessage(c *gin.Context) {
 		return
 	}
 
-	responseChan, errChan := h.chatService.ProcessUserMessage(uint(conv), userID, userTier, req.Message, req.ModelID)
+	responseChan, errChan := h.chatService.ProcessUserMessage(uint(conv), userID, userTier, req.Message, req.ModelID, req.EnableThinking)
 	select {
 	case initialError := <-errChan:
 		if strings.Contains(initialError.Error(), "permission denied") {
@@ -168,11 +168,16 @@ func (h *ChatHandler) ProcessMessage(c *gin.Context) {
 				event := streaming.SSEEvent{Data: chunk}
 				_, _ = c.Writer.Write(event.FormatAsSSE())
 				c.Writer.Flush()
-			case streamError := <-errChan:
-				errorData := `{"message":"` + streamError.Error() + `"}`
-				event := streaming.SSEEvent{Event: "error", Data: errorData}
-				_, _ = c.Writer.Write(event.FormatAsSSE())
-				c.Writer.Flush()
+			case streamError, ok := <-errChan:
+				if !ok {
+					return
+				}
+				if streamError != nil {
+					errorData := `{"message":"` + streamError.Error() + `"}`
+					event := streaming.SSEEvent{Event: "error", Data: errorData}
+					_, _ = c.Writer.Write(event.FormatAsSSE())
+					c.Writer.Flush()
+				}
 				return
 			case <-c.Request.Context().Done():
 				return

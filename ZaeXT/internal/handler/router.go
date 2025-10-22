@@ -39,6 +39,7 @@ func SetupRouter(services *service.Service) *gin.Engine {
 		authGroup.POST("/conversations", chatHandler.CreateConversation)
 		authGroup.GET("/conversations", chatHandler.ListConversations)
 		authGroup.POST("/conversations/:id/messages", chatHandler.ProcessMessage)
+		authGroup.PUT("/conversations/:id/title", chatHandler.UpdateTitle)
 		authGroup.DELETE("/conversations/:id", chatHandler.DeleteConversation)
 		authGroup.POST("/conversations/:id/auto-classify", chatHandler.AutoClassify)
 		authGroup.POST("/categories", categoryHandler.Create)
