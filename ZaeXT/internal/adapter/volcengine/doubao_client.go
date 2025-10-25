@@ -116,8 +116,8 @@ func (a *VolcengineAdapter) isValidModelForTier(modelID, userTier string) bool {
 	return false
 }
 
-func (a *VolcengineAdapter) ChatStream(req ChatRequest, userTier, modelID string, enableThinking bool) (<-chan string, <-chan error) {
-	responseChan := make(chan string)
+func (a *VolcengineAdapter) ChatStream(req ChatRequest, userTier, modelID string, enableThinking bool) (<-chan []byte, <-chan error) {
+	responseChan := make(chan []byte)
 	errChan := make(chan error, 1)
 
 	go func() {
@@ -197,14 +197,7 @@ func (a *VolcengineAdapter) ChatStream(req ChatRequest, userTier, modelID string
 					break
 				}
 
-				var streamResp apiStreamResponse
-				if err := json.Unmarshal([]byte(data), &streamResp); err != nil {
-					continue
-				}
-
-				if len(streamResp.Choice) > 0 && streamResp.Choice[0].Delta.Content != "" {
-					responseChan <- streamResp.Choice[0].Delta.Content
-				}
+				responseChan <- []byte(data)
 			}
 		}
 

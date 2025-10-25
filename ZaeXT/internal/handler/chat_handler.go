@@ -5,8 +5,9 @@ import (
 	"ai-qa-backend/internal/handler/response"
 	"ai-qa-backend/internal/model"
 	"ai-qa-backend/internal/pkg/e"
-	"ai-qa-backend/internal/pkg/streaming"
 	"ai-qa-backend/internal/service"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -32,6 +33,28 @@ func (h *ChatHandler) AutoClassify(c *gin.Context) {
 
 	if err := h.chatService.AutoClassify(uint(conv), userID.(uint)); err != nil {
 		response.Fail(c, e.Error, err.Error())
+		return
+	}
+
+	response.Success(c, nil)
+}
+
+func (h *ChatHandler) UpdateConversationCategory(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	convID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		response.Fail(c, e.InvalidParams, "无效的对话ID")
+		return
+	}
+
+	var req request.UpdateConversationCategory
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, e.InvalidParams, err.Error())
+		return
+	}
+
+	if err := h.chatService.UpdateConversationCategory(uint(convID), userID.(uint), req.CategoryID); err != nil {
+		response.Fail(c, e.PermissionDenied, err.Error())
 		return
 	}
 
@@ -155,27 +178,29 @@ func (h *ChatHandler) ProcessMessage(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.WriteHeader(http.StatusOK)
 
-		event := streaming.SSEEvent{Data: firstChunk}
-		_, _ = c.Writer.Write(event.FormatAsSSE())
+		fmt.Fprintf(c.Writer, "data: %s\n\n", firstChunk)
 		c.Writer.Flush()
 
 		for {
 			select {
 			case chunk, ok := <-responseChan:
 				if !ok {
+					fmt.Fprintf(c.Writer, "data: [DONE]\n\n")
+					c.Writer.Flush()
 					return
 				}
-				event := streaming.SSEEvent{Data: chunk}
-				_, _ = c.Writer.Write(event.FormatAsSSE())
+				fmt.Fprintf(c.Writer, "data: %s\n\n", chunk)
 				c.Writer.Flush()
 			case streamError, ok := <-errChan:
 				if !ok {
+					fmt.Fprintf(c.Writer, "data: [DONE]\n\n")
+					c.Writer.Flush()
 					return
 				}
 				if streamError != nil {
-					errorData := `{"message":"` + streamError.Error() + `"}`
-					event := streaming.SSEEvent{Event: "error", Data: errorData}
-					_, _ = c.Writer.Write(event.FormatAsSSE())
+					errorPayload := gin.H{"error": streamError.Error()}
+					jsonData, _ := json.Marshal(errorPayload)
+					fmt.Fprintf(c.Writer, "data: %s\n\n", jsonData)
 					c.Writer.Flush()
 				}
 				return
@@ -208,4 +233,31 @@ func (h *ChatHandler) ListModels(c *gin.Context) {
 	models := h.chatService.ListAvailableModels(userTier)
 
 	response.Success(c, models)
+}
+
+func (h *ChatHandler) GetMessages(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	convID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		response.Fail(c, e.InvalidParams, "无效的对话ID")
+		return
+	}
+
+	messages, err := h.chatService.GetMessagesByConversationID(uint(convID), userID.(uint))
+	if err != nil {
+		response.Fail(c, e.PermissionDenied, err.Error())
+		return
+	}
+
+	messageInfo := make([]response.MessageInfo, len(messages))
+	for i, msg := range messages {
+		messageInfo[i] = response.MessageInfo{
+			ID:        msg.ID,
+			Role:      msg.Role,
+			Content:   msg.Content,
+			CreatedAt: msg.CreatedAt,
+		}
+	}
+
+	response.Success(c, messageInfo)
 }

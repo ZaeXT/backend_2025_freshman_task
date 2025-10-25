@@ -12,7 +12,7 @@ import (
 )
 
 type AIAdapter interface {
-	ChatStream(req volcengine.ChatRequest, userTier, modelID string, enableThinking bool) (<-chan string, <-chan error)
+	ChatStream(req volcengine.ChatRequest, userTier, modelID string, enableThinking bool) (<-chan []byte, <-chan error)
 	GetAvailableModelsForTier(userTier string) []volcengine.AvailableModel
 }
 
@@ -20,11 +20,13 @@ type ChatService interface {
 	CreateConversation(userID uint, isTemporary bool, categoryID *uint) (*model.Conversation, error)
 	GetConversation(convID, userID uint) (*model.Conversation, error)
 	ListConversations(userID uint) ([]*model.Conversation, error)
-	ProcessUserMessage(convID, userID uint, userTier, message, modelID string, enableThinking bool) (<-chan string, <-chan error)
+	ProcessUserMessage(convID, userID uint, userTier, message, modelID string, enableThinking bool) (<-chan []byte, <-chan error)
 	ListAvailableModels(userTier string) []volcengine.AvailableModel
 	UpdateConversationTitle(convID, userID uint, title string) error
 	DeleteConversation(convID, userID uint) error
 	AutoClassify(convID, userID uint) error
+	GetMessagesByConversationID(convID, userID uint) ([]*model.Message, error)
+	UpdateConversationCategory(convID, userID uint, newCategoryID *uint) error
 }
 
 type chatService struct {
@@ -97,40 +99,46 @@ func (s *chatService) AutoClassify(convID, userID uint) error {
 2. 你的回答必须是一个JSON对象。
 3. JSON对象中必须只包含一个键 "category_id"，其值是你选择的分类的数字ID。
 例如: {"category_id": 123}`
-	userPrompt := fmt.Sprintf("=== 分类列表 ===\n%s\n\n=== 对话内容 ===\n%s", string(categoriesJSON), conversationContext.String())
+	userContent := fmt.Sprintf("=== 分类列表 ===\n%s\n\n=== 对话内容 ===\n%s", string(categoriesJSON), conversationContext.String())
 
 	req := volcengine.ChatRequest{
 		SystemPrompt: systemPrompt,
-		Messages: []*model.Message{
-			{Role: "user", Content: userPrompt},
-		},
+		Messages:     []*model.Message{{Role: "user", Content: userContent}},
 	}
 	freeModels := s.aiAdapter.GetAvailableModelsForTier("free")
+	if len(freeModels) == 0 {
+		return errors.New("no 'free' models configured for auto-classification")
+	}
 	modelID := freeModels[0].ID
+
 	resChan, errChan := s.aiAdapter.ChatStream(req, "free", modelID, false)
 
-	var fullResponse strings.Builder
+	var jsonAccumulator strings.Builder
 	for chunk := range resChan {
-		fullResponse.WriteString(chunk)
+		var streamResp struct {
+			Choices []struct {
+				Delta struct {
+					Content string `json:"content"`
+				} `json:"delta"`
+			} `json:"choices"`
+		}
+		if err := json.Unmarshal(chunk, &streamResp); err == nil {
+			if len(streamResp.Choices) > 0 {
+				jsonAccumulator.WriteString(streamResp.Choices[0].Delta.Content)
+			}
+		}
 	}
+
 	if err := <-errChan; err != nil {
 		return fmt.Errorf("ai call failed: %w", err)
 	}
 
-	responseStr := fullResponse.String()
-	jsonStart := strings.Index(responseStr, "{")
-	jsonEnd := strings.LastIndex(responseStr, "}")
-	if jsonStart == -1 || jsonEnd == -1 {
-		return errors.New("ai response was not a valid json")
-	}
-	jsonStr := responseStr[jsonStart : jsonEnd+1]
-
+	responseStr := jsonAccumulator.String()
 	var result struct {
 		CategoryID uint `json:"category_id"`
 	}
-
-	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
-		return fmt.Errorf("failed to parse ai response json: %w", err)
+	if err := json.Unmarshal([]byte(responseStr), &result); err != nil {
+		return fmt.Errorf("failed to parse ai response json: %w (raw response: %s)", err, responseStr)
 	}
 
 	if _, ok := userCategoryMap[result.CategoryID]; !ok {
@@ -138,6 +146,23 @@ func (s *chatService) AutoClassify(convID, userID uint) error {
 	}
 
 	conv.CategoryID = &result.CategoryID
+	return s.convRepo.Update(conv)
+}
+
+func (s *chatService) UpdateConversationCategory(convID, userID uint, newCategoryID *uint) error {
+	conv, err := s.convRepo.GetByID(convID, userID)
+	if err != nil {
+		return errors.New("conversation not found or permission denied")
+	}
+
+	if newCategoryID != nil {
+		_, err := s.categoryRepo.GetByID(*newCategoryID, userID)
+		if err != nil {
+			return errors.New("target category not found or permission denied")
+		}
+	}
+
+	conv.CategoryID = newCategoryID
 	return s.convRepo.Update(conv)
 }
 
@@ -171,7 +196,15 @@ func (s *chatService) ListConversations(userID uint) ([]*model.Conversation, err
 	return s.convRepo.ListByUserID(userID)
 }
 
-func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message, modelID string, enableThinking bool) (<-chan string, <-chan error) {
+func (s *chatService) GetMessagesByConversationID(convID, userID uint) ([]*model.Message, error) {
+	_, err := s.convRepo.GetByID(convID, userID)
+	if err != nil {
+		return nil, errors.New("conversation not found or permission denied")
+	}
+	return s.msgRepo.GetByConversationID(convID)
+}
+
+func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message, modelID string, enableThinking bool) (<-chan []byte, <-chan error) {
 	conv, err := s.convRepo.GetByID(convID, userID)
 	if err != nil {
 		errChan := make(chan error, 1)
@@ -211,7 +244,7 @@ func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message,
 		modelID = availableModels[0].ID
 	}
 
-	handlerResponseChan := make(chan string)
+	handlerResponseChan := make(chan []byte)
 	handlerErrChan := make(chan error, 1)
 
 	go func() {
@@ -222,7 +255,7 @@ func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message,
 		aiReq := volcengine.ChatRequest{SystemPrompt: systemPrompt, Messages: history}
 		adapterResponseChan, adapterErrChan := s.aiAdapter.ChatStream(aiReq, userTier, modelID, enableThinking)
 
-		var fullResponse strings.Builder
+		var dbContentAccumulator strings.Builder
 		var streamErr error
 
 		for {
@@ -232,7 +265,18 @@ func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message,
 					adapterResponseChan = nil
 				} else {
 					handlerResponseChan <- chunk
-					fullResponse.WriteString(chunk)
+					var streamResp struct {
+						Choices []struct {
+							Delta struct {
+								Content string `json:"content"`
+							} `json:"delta"`
+						} `json:"choices"`
+					}
+					if err := json.Unmarshal(chunk, &streamResp); err == nil {
+						if len(streamResp.Choices) > 0 {
+							dbContentAccumulator.WriteString(streamResp.Choices[0].Delta.Content)
+						}
+					}
 				}
 			case err, ok := <-adapterErrChan:
 				if !ok {
@@ -246,11 +290,11 @@ func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message,
 				break
 			}
 		}
-		if streamErr == nil && fullResponse.Len() > 0 {
+		if streamErr == nil && dbContentAccumulator.Len() > 0 {
 			assistantMsg := &model.Message{
 				ConversationID: conv.ID,
 				Role:           "assistant",
-				Content:        fullResponse.String(),
+				Content:        dbContentAccumulator.String(),
 			}
 			if err := s.msgRepo.Create(assistantMsg); err != nil {
 				log.Printf("ERROR: Failed to save assistant message for conv %d: %v", conv.ID, err)
@@ -271,11 +315,30 @@ func (s *chatService) ProcessUserMessage(convID, userID uint, userTier, message,
 func (s *chatService) UpdateConversationTitle(convID, userID uint, title string) error {
 	conv, err := s.GetConversation(convID, userID)
 	if err != nil {
-		return err
+		return errors.New("conversation not found or permission denied")
 	}
-	conv.Title = title
-	conv.IsTitleUserModified = true
-	return s.convRepo.Update(conv)
+	if strings.TrimSpace(title) == "" {
+		history, err := s.msgRepo.GetByConversationID(convID)
+		if err != nil || len(history) == 0 {
+			conv.Title = "New Chat"
+			conv.IsTitleUserModified = false
+			return s.convRepo.Update(conv)
+		}
+
+		conv.IsTitleUserModified = false
+		if err := s.convRepo.Update(conv); err != nil {
+			return err
+		}
+
+		go s.autoGenerateTitle(conv, history)
+
+		return nil
+
+	} else {
+		conv.Title = title
+		conv.IsTitleUserModified = true
+		return s.convRepo.Update(conv)
+	}
 }
 
 func (s *chatService) DeleteConversation(convID, userID uint) error {
@@ -288,31 +351,60 @@ func (s *chatService) DeleteConversation(convID, userID uint) error {
 }
 
 func (s *chatService) autoGenerateTitle(conv *model.Conversation, history []*model.Message) {
-	var context strings.Builder
-	for _, msg := range history {
-		context.WriteString(fmt.Sprintf("%s: %s\n", msg.Role, msg.Content))
+	log.Printf("INFO: Starting auto title generation for conv %d", conv.ID)
+	if len(history) == 0 {
+		return
 	}
-
-	titlePrompt := "根据以上对话，生成一个不超过10个字的简洁标题。只返回标题本身，不要任何多余的文字或标点。"
-
+	titlePrompt := "你是一个对话标题生成助手。根据用户和助手的对话内容，生成一个简短、精确、不超过10个字的摘要作为标题。你的回答必须只包含标题本身，不要任何额外的解释、引言或标点符号。"
+	messagesForTitle := history
+	finalInstruction := &model.Message{
+		Role:    "user",
+		Content: "根据以上对话，生成一个简洁的标题。",
+	}
+	messagesForTitle = append(messagesForTitle, finalInstruction)
 	req := volcengine.ChatRequest{
 		SystemPrompt: titlePrompt,
-		Messages: []*model.Message{
-			{Role: "user", Content: context.String()},
-		},
+		Messages:     messagesForTitle,
 	}
 
 	freeModels := s.aiAdapter.GetAvailableModelsForTier("free")
+	if len(freeModels) == 0 {
+		log.Printf("ERROR: No 'free' tier models available for auto title generation.")
+		return
+	}
 	modelID := freeModels[0].ID
 	resChan, errChan := s.aiAdapter.ChatStream(req, "free", modelID, false)
-
-	select {
-	case title := <-resChan:
-		if title != "" {
-			conv.Title = strings.Trim(title, "\"“” ")
-			_ = s.convRepo.Update(conv)
+	var titleAccumulator strings.Builder
+	for chunk := range resChan {
+		var streamResp struct {
+			Choices []struct {
+				Delta struct {
+					Content string `json:"content"`
+				} `json:"delta"`
+			} `json:"choices"`
 		}
-	case <-errChan:
-
+		if err := json.Unmarshal(chunk, &streamResp); err == nil {
+			if len(streamResp.Choices) > 0 {
+				titleAccumulator.WriteString(streamResp.Choices[0].Delta.Content)
+			}
+		}
+	}
+	if err := <-errChan; err != nil {
+		log.Printf("ERROR: AI call for auto title generation failed for conv %d: %v", conv.ID, err)
+		return
+	}
+	title := strings.Trim(titleAccumulator.String(), "\"“” \n\r")
+	if title != "" {
+		latestConv, err := s.convRepo.GetByID(conv.ID, conv.UserID)
+		if err == nil && !latestConv.IsTitleUserModified {
+			latestConv.Title = title
+			if err := s.convRepo.Update(latestConv); err != nil {
+				log.Printf("ERROR: Failed to update auto-generated title for conv %d: %v", conv.ID, err)
+			} else {
+				log.Printf("INFO: Auto-generated title '%s' for conv %d", title, conv.ID)
+			}
+		}
+	} else {
+		log.Printf("INFO: Auto-generated title is empty for conv %d", conv.ID)
 	}
 }

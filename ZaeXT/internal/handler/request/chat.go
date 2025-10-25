@@ -12,5 +12,5 @@ type CreateConversation struct {
 }
 
 type UpdateTitle struct {
-	Title string `json:"title" binding:"required,max=255"`
+	Title string `json:"title" binding:"max=255"`
 }
