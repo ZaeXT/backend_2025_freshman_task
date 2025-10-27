@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  @apply h-full antialiased;
+}
+
+body {
+  @apply min-h-screen bg-surface-light text-slate-900 transition-colors duration-300 ease-out dark:bg-surface-dark dark:text-slate-100;
+}
+
+#app {
+  @apply flex min-h-screen flex-col;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-surface-light/70 dark:bg-surface-dark/50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-400/60 hover:bg-slate-500/70 dark:bg-slate-600/60 dark:hover:bg-slate-500;
+}
+
+.vue3-resize-observer,
+.vue3-resize-observer > object {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden;
+}
